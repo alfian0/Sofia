@@ -20,6 +20,10 @@ struct ContentView: View {
             .tabItem {
               Label("Home", systemImage: "house")
             }
+          LogPage()
+            .tabItem {
+              Label("Log", systemImage: "book.closed")
+            }
           UserPage()
             .tabItem {
               Label("Account", systemImage: "person")
