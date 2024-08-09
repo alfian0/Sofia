@@ -14,15 +14,7 @@ struct ContentView: View {
   @State private var isAuthorized = false
   @State private var isProcessing = false
   @State private var grandTotal: String?
-  
-  let oauthswift = OAuth2Swift(
-    consumerKey: API.clientID,
-    consumerSecret: API.clientSecret,
-    authorizeUrl: "https://wakatime.com/oauth/authorize",
-    accessTokenUrl: "https://wakatime.com/oauth/token",
-    responseType: "code"
-  )
-  
+
   private let keychain = KeychainSwift()
   
   let decoder: JSONDecoder = {
@@ -36,34 +28,7 @@ struct ContentView: View {
       if isAuthorized {
         Text(grandTotal ?? "You are authorized!")
       } else {
-        Group {
-          if isProcessing {
-            ProgressView()
-          } else {
-            Button {
-              oauthswift.authorizeURLHandler = SafariURLHandler(
-                viewController: UIApplication.shared.windows.first!.rootViewController!,
-                oauthSwift: oauthswift
-              )
-              
-              let _ = oauthswift.authorize(
-                withCallbackURL: URL(string: "sofia://oauth-callback/wakatime")!,
-                scope: "email read_stats.languages read_summaries.projects read_summaries read_heartbeats",
-                state: "state"
-              ) { result in
-                switch result {
-                case .success(let token):
-                  keychain.set(token.credential.oauthToken, forKey: "stringToken")
-                  isAuthorized = true
-                case .failure(let error):
-                  print(error)
-                }
-              }
-            } label: {
-              Text("Authenticate")
-            }
-          }
-        }
+        OnboardingPage(isAuthorized: $isAuthorized, isProcessing: $isProcessing)
       }
     }
     .onAppear {
@@ -87,17 +52,6 @@ struct ContentView: View {
       } else {
         isAuthorized = false
       }
-    }
-    .onOpenURL { url in
-      isProcessing = true
-      
-      let notification = Notification(
-        name: OAuthSwift.didHandleCallbackURL,
-        object: nil,
-        userInfo: ["OAuthSwiftCallbackNotificationOptionsURLKey": url]
-      )
-      
-      NotificationCenter.default.post(notification)
     }
   }
 }
