@@ -13,6 +13,7 @@
 		6B7627C12C6601C600B9F17B /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6B7627C02C6601C600B9F17B /* Preview Assets.xcassets */; };
 		6B7627C92C66030C00B9F17B /* OAuthSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 6B7627C82C66030C00B9F17B /* OAuthSwift */; };
 		6B7627CF2C66122800B9F17B /* Configuration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B7627CE2C66122800B9F17B /* Configuration.swift */; };
+		6B7627D22C66181200B9F17B /* KeychainSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 6B7627D12C66181200B9F17B /* KeychainSwift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -32,6 +33,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				6B7627D22C66181200B9F17B /* KeychainSwift in Frameworks */,
 				6B7627C92C66030C00B9F17B /* OAuthSwift in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -104,6 +106,7 @@
 			name = Sofia;
 			packageProductDependencies = (
 				6B7627C82C66030C00B9F17B /* OAuthSwift */,
+				6B7627D12C66181200B9F17B /* KeychainSwift */,
 			);
 			productName = Sofia;
 			productReference = 6B7627B62C6601C400B9F17B /* Sofia.app */;
@@ -135,6 +138,7 @@
 			mainGroup = 6B7627AD2C6601C400B9F17B;
 			packageReferences = (
 				6B7627C72C66030C00B9F17B /* XCRemoteSwiftPackageReference "OAuthSwift" */,
+				6B7627D02C66181200B9F17B /* XCRemoteSwiftPackageReference "keychain-swift" */,
 			);
 			productRefGroup = 6B7627B72C6601C400B9F17B /* Products */;
 			projectDirPath = "";
@@ -222,7 +226,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
@@ -277,7 +281,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 16.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 14.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = iphoneos;
@@ -385,6 +389,14 @@
 				minimumVersion = 2.0.0;
 			};
 		};
+		6B7627D02C66181200B9F17B /* XCRemoteSwiftPackageReference "keychain-swift" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/evgenyneu/keychain-swift.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 24.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -392,6 +404,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 6B7627C72C66030C00B9F17B /* XCRemoteSwiftPackageReference "OAuthSwift" */;
 			productName = OAuthSwift;
+		};
+		6B7627D12C66181200B9F17B /* KeychainSwift */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 6B7627D02C66181200B9F17B /* XCRemoteSwiftPackageReference "keychain-swift" */;
+			productName = KeychainSwift;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

@@ -7,6 +7,7 @@
 
 import SwiftUI
 import OAuthSwift
+import KeychainSwift
 
 struct ContentView: View {
   @State private var isAuthorized = false
@@ -19,6 +20,8 @@ struct ContentView: View {
     accessTokenUrl: "https://wakatime.com/oauth/token",
     responseType: "code"
   )
+  
+  private let keychain = KeychainSwift()
 
   var body: some View {
     VStack {
@@ -42,8 +45,8 @@ struct ContentView: View {
               ) { result in
                 switch result {
                 case .success(let token):
-                  print(token)
-                  isAuthorized.toggle()
+                  keychain.set(token.credential.oauthToken, forKey: "stringToken")
+                  isAuthorized = true
                 case .failure(let error):
                   print(error)
                 }
@@ -55,8 +58,16 @@ struct ContentView: View {
         }
       }
     }
+    .onAppear {
+      if let token = keychain.get("stringToken"),
+         !token.isEmpty {
+        isAuthorized = true
+      } else {
+        isAuthorized = false
+      }
+    }
     .onOpenURL { url in
-      isProcessing.toggle()
+      isProcessing = true
       
       let notification = Notification(
         name: OAuthSwift.didHandleCallbackURL,
