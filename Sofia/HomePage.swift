@@ -53,11 +53,20 @@ struct HomePage: View {
         if let projects = statusBar?.projects {
           Section(header: Text("Today's Project")) {
             ForEach(Array(zip(projects.indices, projects)), id:\.0) { project in
-              HStack {
-                Text(project.1.name ?? "")
-                Spacer()
-                ProgressView(value: (project.1.totalSeconds ?? 0)/divider)
-                  .frame(width: 200)
+              NavigationLink {
+                ProjectPage(
+                  project: project.1.name ?? "",
+                  percent: (project.1.totalSeconds ?? 0),
+                  start: statusBar?.range?.start ?? "",
+                  end: statusBar?.range?.end ?? ""
+                )
+              } label: {
+                HStack {
+                  Text(project.1.name ?? "")
+                  Spacer()
+                  ProgressView(value: (project.1.totalSeconds ?? 0)/divider)
+                    .frame(width: 200)
+                }
               }
             }
           }

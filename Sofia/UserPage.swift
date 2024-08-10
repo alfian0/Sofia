@@ -55,7 +55,7 @@ struct UserPage: View {
           }
           
           Section(header: Text("Last Modified")) {
-            Text(user?.modifiedAt ?? "")
+            Text((user?.modifiedAt ?? "").toDate()?.toString(identifier: user?.timezone ?? "") ?? "")
           }
           
           Section(header: Text("Social Media")) {
@@ -180,4 +180,25 @@ struct UserPage_Previews: PreviewProvider {
     static var previews: some View {
       UserPage()
     }
+}
+
+extension String {
+  func toDate() -> Date? {
+    let dateFormatter = ISO8601DateFormatter()
+    dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+    return dateFormatter.date(from: self)
+  }
+}
+
+extension Date {
+  func toString(
+    with format: String = "yyyy-MM-dd HH:mm:ss",
+    identifier: String = "Asia/Jakarta"
+  ) -> String {
+    let dateFormatter = DateFormatter()
+    dateFormatter.timeZone = TimeZone(identifier: identifier)
+    dateFormatter.dateFormat = format
+    
+    return dateFormatter.string(from: self)
+  }
 }

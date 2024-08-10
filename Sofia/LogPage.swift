@@ -31,7 +31,7 @@ struct LogPage: View {
               
               Spacer()
               
-              Text(log.1.createdAt ?? "")
+              Text((log.1.createdAt ?? "").toDate()?.toString() ?? "")
                 .font(.caption)
             }
             Text(log.1.value ?? "")
