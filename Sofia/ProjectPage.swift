@@ -74,6 +74,8 @@ struct ProjectPage: View {
                   Text("Message")
                     .font(.caption)
                   Text(commit.commit?.message ?? "")
+                  Text(commit.commit?.committer?.date?.toDate()?.toString() ?? "")
+                    .font(.caption)
                 }
                 
                 Spacer()

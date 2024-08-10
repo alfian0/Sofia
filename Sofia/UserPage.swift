@@ -34,13 +34,15 @@ struct UserPage: View {
       VStack {
         List {
           Section {
-            Label {
+            HStack {
               VStack(alignment: .leading) {
                 Text(user?.displayName ?? "")
                   .font(.title2)
                 Text(user?.email ?? "")
               }
-            } icon: {
+              
+              Spacer()
+              
               WebImage(url: URL(string: user?.photo ?? "")) { image in
                 image.resizable()
               } placeholder: {
