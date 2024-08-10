@@ -149,7 +149,7 @@ struct HomePage: View {
               return "🎯 You're on track. Keep going at this pace, and you'll finish the day strong."
           }
           
-      case 0.75...1.0:
+      case 0.75...:
           // Final quarter of the workday
           if codingTime < 3 && commits < 1 {
               return "🧐 The day is almost over, and progress has been slow. Reflect on what might be holding you back, and consider how you can improve tomorrow."
