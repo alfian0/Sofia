@@ -41,6 +41,9 @@ struct OnboardingPage: View {
         guard !isProcessing else {
           return
         }
+        
+        isProcessing = true
+        
         oauthswift.authorizeURLHandler = SafariURLHandler(
           viewController: UIApplication.shared.windows.first!.rootViewController!,
           oauthSwift: oauthswift
@@ -51,6 +54,8 @@ struct OnboardingPage: View {
           scope: "email read_stats.languages read_summaries.projects read_summaries read_heartbeats",
           state: "state"
         ) { result in
+          isProcessing = false
+          
           switch result {
           case .success(let token):
             keychain.set(token.credential.oauthToken, forKey: "stringToken")

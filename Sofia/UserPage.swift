@@ -9,14 +9,25 @@ import SwiftUI
 import Alamofire
 import KeychainSwift
 import SDWebImageSwiftUI
+import OAuthSwift
 
 struct UserPage: View {
   @State var user: UserModel.DataClass? = nil
+  @State var isGithubConnected: Bool = false
+  @State var isProcessing: Bool = false
   let decoder: JSONDecoder = {
       let decoder = JSONDecoder()
       decoder.keyDecodingStrategy = .convertFromSnakeCase
       return decoder
   }()
+  private let keychain = KeychainSwift()
+  private let oauthswift = OAuth2Swift(
+    consumerKey: API.githubClientID,
+    consumerSecret: API.githubClientSecret,
+    authorizeUrl: "https://github.com/login/oauth/authorize",
+    accessTokenUrl: "https://github.com/login/oauth/access_token",
+    responseType: "code"
+  )
   
   var body: some View {
     NavigationView(content: {
@@ -54,7 +65,50 @@ struct UserPage: View {
               Image(systemName: "globe")
             }
             Label {
-              Text("Github")
+              HStack {
+                Text("Github")
+                Spacer()
+                if isGithubConnected {
+                  Text("Connected")
+                    .fontWeight(.bold)
+                    .foregroundColor(.green)
+                } else {
+                  Button {
+                    guard !isProcessing else {
+                      return
+                    }
+                    
+                    isProcessing = true
+                    
+                    oauthswift.authorizeURLHandler = SafariURLHandler(
+                      viewController: UIApplication.shared.windows.first!.rootViewController!,
+                      oauthSwift: oauthswift
+                    )
+                    
+                    let _ = oauthswift.authorize(
+                      withCallbackURL: URL(string: "sofia://oauth-callback/github")!,
+                      scope: "user repo",
+                      state: "state"
+                    ) { result in
+                      isProcessing = false
+                      switch result {
+                      case .success(let token):
+                        keychain.set(token.credential.oauthToken, forKey: "githubToken")
+                        isGithubConnected = true
+                      case .failure(let error):
+                        print(error.localizedDescription)
+                      }
+                    }
+                  } label: {
+                    Text("Connect")
+                      .fontWeight(.bold)
+                      .foregroundColor(.white)
+                      .frame(height: 44)
+                      .padding(.horizontal, 16)
+                  }
+                  .background(RoundedRectangle(cornerRadius: 8).fill(Color.blue))
+                }
+              }
             } icon: {
               Image(systemName: "arrow.rectanglepath")
             }
@@ -86,7 +140,11 @@ struct UserPage: View {
       .navigationTitle("Profile")
     })
     .onAppear {
-      guard let token = KeychainSwift().get("stringToken"), !token.isEmpty else {
+      if let token = keychain.get("githubToken"), !token.isEmpty {
+        isGithubConnected = true
+      }
+      
+      guard let token = keychain.get("stringToken"), !token.isEmpty else {
         return
       }
       AF.request(
@@ -103,6 +161,17 @@ struct UserPage: View {
           print(error)
         }
       }
+    }
+    .onOpenURL { url in
+      isProcessing = true
+      
+      let notification = Notification(
+        name: OAuthSwift.didHandleCallbackURL,
+        object: nil,
+        userInfo: ["OAuthSwiftCallbackNotificationOptionsURLKey": url]
+      )
+      
+      NotificationCenter.default.post(notification)
     }
   }
 }

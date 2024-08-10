@@ -29,9 +29,9 @@ struct HomePage: View {
     
     NavigationView {
       List {
-        Section(footer: Text(footer).font(.caption).foregroundColor(Color(UIColor.systemGray))) {
-          Text(insight)
-            .font(.title)
+        VStack(alignment: .leading) {
+          Text(insight).font(.title)
+          Text(footer).font(.caption).foregroundColor(Color(UIColor.systemGray))
         }
         Section(header: Text("Today's Work Hours")) {
           VStack {
