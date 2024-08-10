@@ -19,7 +19,6 @@ struct ProjectPage: View {
   let end: String
   
   private let divider: Double = 86_400
-  private let owner: String = "alfian0"
   
   private let decoder: JSONDecoder = {
       let decoder = JSONDecoder()
@@ -85,23 +84,41 @@ struct ProjectPage: View {
     .navigationBarTitleDisplayMode(.inline)
     .onAppear {
       if let token = KeychainSwift().get("githubToken"),
-         !token.isEmpty, let url = URL(string: "https://api.github.com/repos/\(owner)/\(project)/commits?since=\(start)&until=\(end)") {
+         !token.isEmpty {
         AF.request(
-          url,
+          URL(string: "https://api.github.com/user")!,
           headers: .init([.authorization(bearerToken: token)])
         ).responseDecodable(
-          of: [CommitModel].self,
+          of: GithubUserModel.self,
           decoder: decoder
         ) { response in
           switch response.result {
           case .success(let data):
-            self.commits = data
+            guard let user = data.login,
+                  let url = URL(string: "https://api.github.com/repos/\(user)/\(project)/commits?since=\(start)&until=\(end)") else {
+              error = NSError(domain: "Sofia", code: 404)
+              return
+            }
+            AF.request(
+              url,
+              headers: .init([.authorization(bearerToken: token)])
+            ).responseDecodable(
+              of: [CommitModel].self,
+              decoder: decoder
+            ) { response in
+              switch response.result {
+              case .success(let data):
+                self.commits = data
+              case .failure(let error):
+                self.error = error
+              }
+            }
           case .failure(let error):
             self.error = error
           }
         }
       } else {
-        error = NSError(domain: "Sofia", code: 404)
+        error = NSError(domain: "Sofia", code: 403)
       }
     }
   }
@@ -111,7 +128,7 @@ struct ProjectPage_Previews: PreviewProvider {
   static var previews: some View {
     NavigationView {
       ProjectPage(
-        project: "Sofias",
+        project: "Sofia",
         percent: 0.5,
         start: "2024-08-09T14:21:22Z",
         end: "2024-08-010T14:21:22Z")
