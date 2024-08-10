@@ -61,11 +61,11 @@ struct UserPage: View {
           }
           
           Section(header: Text("Social Media")) {
-            Label {
-              Text("Website")
-            } icon: {
-              Image(systemName: "globe")
-            }
+//            Label {
+//              Text("Website")
+//            } icon: {
+//              Image(systemName: "globe")
+//            }
             Label {
               HStack {
                 Text("Github")
@@ -114,11 +114,11 @@ struct UserPage: View {
             } icon: {
               Image(systemName: "arrow.rectanglepath")
             }
-            Label {
-              Text("Twitter")
-            } icon: {
-              Image(systemName: "bird")
-            }
+//            Label {
+//              Text("Twitter")
+//            } icon: {
+//              Image(systemName: "bird")
+//            }
           }
           
           Section(header: Text("Last Project")) {
