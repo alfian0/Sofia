@@ -56,7 +56,7 @@ struct HomePage: View {
               NavigationLink {
                 ProjectPage(
                   project: project.1.name ?? "",
-                  percent: (project.1.totalSeconds ?? 0),
+                  seconds: (project.1.totalSeconds ?? 0),
                   start: statusBar?.range?.start ?? "",
                   end: statusBar?.range?.end ?? ""
                 )

@@ -14,7 +14,7 @@ struct ProjectPage: View {
   @State var commits: [CommitModel] = []
   @State var error: Error?
   let project: String
-  let percent: Double
+  let seconds: Double
   let start: String
   let end: String
   
@@ -47,11 +47,26 @@ struct ProjectPage: View {
         }
         .padding(.horizontal, 32)
         .padding(.vertical, 32)
-      } else {
-//        Text(project)
-//        Text("\(percent/(divider/24)) hours")
-//        Text("\(commits.count)")
+      } else if !commits.isEmpty {
         List {
+          Section {
+            let lowThresholdCoding = 2.0
+            let highThresholdCoding = 6.0
+            let lowThresholdCommits = 5
+            let highThresholdCommits = 12
+            
+            let insight = generateDailyComparisonInsight(
+                codingTime: seconds / (divider/24),
+                commits: commits.count,
+                lowThresholdCoding: lowThresholdCoding,
+                highThresholdCoding: highThresholdCoding,
+                lowThresholdCommits: lowThresholdCommits,
+                highThresholdCommits: highThresholdCommits
+            )
+            
+            Text(insight).font(.title)
+          }
+          
           Section(header: Text("Commits")) {
             ForEach(commits) { commit in
               HStack {
@@ -129,9 +144,63 @@ struct ProjectPage_Previews: PreviewProvider {
     NavigationView {
       ProjectPage(
         project: "Sofia",
-        percent: 0.5,
+        seconds: 0.5,
         start: "2024-08-09T14:21:22Z",
         end: "2024-08-010T14:21:22Z")
     }
   }
+}
+
+// Enum to represent ranges
+enum Range {
+    case low
+    case average
+    case high
+}
+
+// Function to determine the range for coding time or commits
+func determineRange(for value: Double, lowThreshold: Double, highThreshold: Double) -> Range {
+    if value < lowThreshold {
+        return .low
+    } else if value > highThreshold {
+        return .high
+    } else {
+        return .average
+    }
+}
+
+// Function to generate insights based on coding time and commits
+func generateDailyComparisonInsight(codingTime: Double, commits: Int, lowThresholdCoding: Double, highThresholdCoding: Double, lowThresholdCommits: Int, highThresholdCommits: Int) -> String {
+    
+    let codingTimeRange = determineRange(for: codingTime, lowThreshold: lowThresholdCoding, highThreshold: highThresholdCoding)
+    let commitsRange = determineRange(for: Double(commits), lowThreshold: Double(lowThresholdCommits), highThreshold: Double(highThresholdCommits))
+    
+    switch (codingTimeRange, commitsRange) {
+    case (.low, .low):
+        return "Low coding time and low commits. Consider revisiting your tasks or focus to increase productivity."
+        
+    case (.low, .average):
+        return "Low coding time but average commits. You’re efficient, but consider investing more time for sustained progress."
+        
+    case (.low, .high):
+        return "Low coding time but high commits. You’re very efficient! Make sure the quality is also top-notch."
+        
+    case (.average, .low):
+        return "Average coding time but low commits. Review your work to see if something is slowing you down."
+        
+    case (.average, .average):
+        return "Average coding time and average commits. You’re steady today, keep maintaining this pace."
+        
+    case (.average, .high):
+        return "Average coding time and high commits. Great job! You're making significant progress."
+        
+    case (.high, .low):
+        return "High coding time but low commits. It could indicate you're tackling complex problems or need to improve efficiency."
+        
+    case (.high, .average):
+        return "High coding time and average commits. You’re working hard; make sure to maintain this momentum."
+        
+    case (.high, .high):
+        return "High coding time and high commits. You’re on fire today! Keep up the excellent work, but don’t forget to take breaks."
+    }
 }
