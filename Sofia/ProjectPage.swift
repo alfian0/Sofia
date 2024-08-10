@@ -47,7 +47,7 @@ struct ProjectPage: View {
         }
         .padding(.horizontal, 32)
         .padding(.vertical, 32)
-      } else if !commits.isEmpty {
+      } else /*if !commits.isEmpty*/ {
         List {
           Section {
             let lowThresholdCoding = 2.0
@@ -143,13 +143,12 @@ struct ProjectPage: View {
 
 struct ProjectPage_Previews: PreviewProvider {
   static var previews: some View {
-    NavigationView {
-      ProjectPage(
-        project: "Sofia",
-        seconds: 0.5,
-        start: "2024-08-09T14:21:22Z",
-        end: "2024-08-010T14:21:22Z")
-    }
+    ProjectPage(
+      project: "Sofia",
+      seconds: 0.5,
+      start: "2024-08-09T14:21:22Z",
+      end: "2024-08-010T14:21:22Z"
+    )
   }
 }
 

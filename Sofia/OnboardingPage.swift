@@ -26,7 +26,7 @@ struct OnboardingPage: View {
       Text("Sofia")
         .font(Font.system(size: 50))
         .fontWeight(.bold)
-      Text("Stop tracking work manually - Automate it and reclaim yout time.")
+      Text("Stop tracking work manually - Automate it and reclaim your time.")
         .font(.largeTitle)
       
       GeometryReader { proxy in
@@ -84,6 +84,9 @@ struct OnboardingPage: View {
       .buttonStyle(.plain)
     }
     .padding(.horizontal, 32)
+    .onAppear {
+      isProcessing = false
+    }
     .onOpenURL { url in
       isProcessing = true
       

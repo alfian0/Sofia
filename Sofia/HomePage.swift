@@ -64,7 +64,7 @@ struct HomePage: View {
                 HStack {
                   Text(project.1.name ?? "")
                   Spacer()
-                  ProgressView(value: (project.1.totalSeconds ?? 0)/divider)
+                  ProgressView(value: (project.1.totalSeconds ?? 0)/(statusBar?.grandTotal?.totalSeconds ?? 0))
                     .frame(width: 200)
                 }
               }
@@ -78,7 +78,7 @@ struct HomePage: View {
               HStack {
                 Text(language.1.name ?? "")
                 Spacer()
-                ProgressView(value: (language.1.totalSeconds ?? 0)/divider)
+                ProgressView(value: (language.1.totalSeconds ?? 0)/(statusBar?.grandTotal?.totalSeconds ?? 0))
                   .frame(width: 200)
               }
             }
@@ -91,7 +91,7 @@ struct HomePage: View {
               HStack {
                 Text(categorie.1.name ?? "")
                 Spacer()
-                ProgressView(value: (categorie.1.totalSeconds ?? 0)/divider)
+                ProgressView(value: (categorie.1.totalSeconds ?? 0)/(statusBar?.grandTotal?.totalSeconds ?? 0))
                   .frame(width: 200)
               }
             }

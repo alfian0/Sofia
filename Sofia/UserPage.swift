@@ -108,7 +108,7 @@ struct UserPage: View {
                       .frame(height: 44)
                       .padding(.horizontal, 16)
                   }
-                  .background(RoundedRectangle(cornerRadius: 8).fill(Color.blue))
+                  .background(RoundedRectangle(cornerRadius: 8).fill(Color.black))
                 }
               }
             } icon: {
