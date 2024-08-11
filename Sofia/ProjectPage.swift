@@ -20,7 +20,7 @@ struct ProjectPage: View {
   let start: String
   let end: String
   
-  private let divider: Double = 86_400
+  private let divider: Double = 3_600
   
   private let decoder: JSONDecoder = {
       let decoder = JSONDecoder()
@@ -54,13 +54,19 @@ struct ProjectPage: View {
               let lowThresholdCommits = 5
               let highThresholdCommits = 12
               
+              let now = Date()
+              let startOfWorkday = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: now)!
+              let endOfWorkday = Calendar.current.date(bySettingHour: 17, minute: 0, second: 0, of: now)!
+              
               let insight = generateDailyComparisonInsight(
-                  codingTime: seconds / (divider/24),
+                  codingTime: seconds / divider,
                   commits: commits.count,
                   lowThresholdCoding: lowThresholdCoding,
                   highThresholdCoding: highThresholdCoding,
                   lowThresholdCommits: lowThresholdCommits,
-                  highThresholdCommits: highThresholdCommits
+                  highThresholdCommits: highThresholdCommits,
+                  startOfWorkday: startOfWorkday,
+                  endOfWorkday: endOfWorkday
               )
               
               Text(insight).font(.title)
@@ -231,37 +237,73 @@ func determineRange(for value: Double, lowThreshold: Double, highThreshold: Doub
 }
 
 // Function to generate insights based on coding time and commits
-func generateDailyComparisonInsight(codingTime: Double, commits: Int, lowThresholdCoding: Double, highThresholdCoding: Double, lowThresholdCommits: Int, highThresholdCommits: Int) -> String {
+func generateDailyComparisonInsight(codingTime: Double, commits: Int, lowThresholdCoding: Double, highThresholdCoding: Double, lowThresholdCommits: Int, highThresholdCommits: Int, startOfWorkday: Date, endOfWorkday: Date) -> String {
     
-    let codingTimeRange = determineRange(for: codingTime, lowThreshold: lowThresholdCoding, highThreshold: highThresholdCoding)
-    let commitsRange = determineRange(for: Double(commits), lowThreshold: Double(lowThresholdCommits), highThreshold: Double(highThresholdCommits))
+    // Calculate the current time and workday progress
+    let now = Date()
+    let totalWorkdayDuration = endOfWorkday.timeIntervalSince(startOfWorkday)
+    let elapsedWorkdayDuration = now.timeIntervalSince(startOfWorkday)
+    let workdayProgress = elapsedWorkdayDuration / totalWorkdayDuration
+    
+    // Adjust thresholds based on workday progress
+    let adjustedLowThresholdCoding = lowThresholdCoding * workdayProgress
+    let adjustedHighThresholdCoding = highThresholdCoding * workdayProgress
+    let adjustedLowThresholdCommits = Double(lowThresholdCommits) * workdayProgress
+    let adjustedHighThresholdCommits = Double(highThresholdCommits) * workdayProgress
+    
+    // Determine coding time and commits range
+    let codingTimeRange = determineRange(for: codingTime, lowThreshold: adjustedLowThresholdCoding, highThreshold: adjustedHighThresholdCoding)
+    let commitsRange = determineRange(for: Double(commits), lowThreshold: adjustedLowThresholdCommits, highThreshold: adjustedHighThresholdCommits)
+    
+    // Define messages for each quarter of the day
+    var timeSpecificMessage = ""
+    
+    switch workdayProgress {
+    case 0..<0.25:
+        timeSpecificMessage = "It's early in the day. "
+        
+    case 0.25..<0.75:
+        timeSpecificMessage = "You're in the middle of your workday. "
+        
+    case 0.75...:
+        timeSpecificMessage = "It's the final stretch of the workday. "
+        
+    default:
+        timeSpecificMessage = ""
+    }
+    
+    // Generate the insight based on coding time and commits
+    let insight: String
     
     switch (codingTimeRange, commitsRange) {
     case (.low, .low):
-        return "Low coding time and low commits. Consider revisiting your tasks or focus to increase productivity."
+        insight = "Low coding time and low commits. Consider revisiting your tasks or focus to increase productivity."
         
     case (.low, .average):
-        return "Low coding time but average commits. You’re efficient, but consider investing more time for sustained progress."
+        insight = "Low coding time but average commits. You’re efficient, but consider investing more time for sustained progress."
         
     case (.low, .high):
-        return "Low coding time but high commits. You’re very efficient! Make sure the quality is also top-notch."
+        insight = "Low coding time but high commits. You’re very efficient! Make sure the quality is also top-notch."
         
     case (.average, .low):
-        return "Average coding time but low commits. Review your work to see if something is slowing you down."
+        insight = "Average coding time but low commits. Review your work to see if something is slowing you down."
         
     case (.average, .average):
-        return "Average coding time and average commits. You’re steady today, keep maintaining this pace."
+        insight = "Average coding time and average commits. You’re steady today, keep maintaining this pace."
         
     case (.average, .high):
-        return "Average coding time and high commits. Great job! You're making significant progress."
+        insight = "Average coding time and high commits. Great job! You're making significant progress."
         
     case (.high, .low):
-        return "High coding time but low commits. It could indicate you're tackling complex problems or need to improve efficiency."
+        insight = "High coding time but low commits. It could indicate you're tackling complex problems or need to improve efficiency."
         
     case (.high, .average):
-        return "High coding time and average commits. You’re working hard; make sure to maintain this momentum."
+        insight = "High coding time and average commits. You’re working hard; make sure to maintain this momentum."
         
     case (.high, .high):
-        return "High coding time and high commits. You’re on fire today! Keep up the excellent work, but don’t forget to take breaks."
+        insight = "High coding time and high commits. You’re on fire today! Keep up the excellent work, but don’t forget to take breaks."
     }
+    
+    // Combine the time-specific message with the general insight
+    return timeSpecificMessage + insight
 }
