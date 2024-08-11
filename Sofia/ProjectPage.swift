@@ -76,39 +76,47 @@ struct ProjectPage: View {
               header: HStack {
                 Text("❤️")
                 Text("Heart Beat")
+                Text("(\(durations.count))")
               },
               footer: Text("A single commit from a WakaTime project showing the time spent coding on the commit.")
                 .font(.caption)
                 .foregroundColor(Color(UIColor.systemGray))
             ) {
               GeometryReader { proxy in
-                let space = getTimeRanges(from: durations.map({ ($0.time ?? 0) }))
                 let widthPerSecond = (proxy.size.width)/divider
-                HStack(spacing: 0) {
-                  if let first = space.first {
-                    Color.white
-                      .frame(width: widthPerSecond*first)
-                  }
-                  ForEach(Array(zip(durations.indices, durations)), id:\.0) { duration in
-                    let second = (duration.1.duration ?? 0)
-                    HStack(spacing: 0) {
-                      Color.red
-                        .frame(width: widthPerSecond*second)
-                      if duration.0 < (durations.count-1) {
-                        Color.white
-                          .frame(width: widthPerSecond*space[duration.0+1])
-                      }
-                    }
-                  }
+                ForEach(durations) { duration in
+                  let time = duration.time ?? 0
+                  let duration = duration.duration ?? 0
+                  // Get the start of the day (12:00 AM) for the first epoch
+                  let firstEpochDate = Date(timeIntervalSince1970: time)
+                  let calendar = Calendar.current
+                  let startOfDay = calendar.startOfDay(for: firstEpochDate)
+                  let startOfDayEpoch = startOfDay.timeIntervalSince1970
+                  
+                  // Calculate the difference between 12:00 AM and the first epoch time
+                  let timeFromStartOfDay = time - startOfDayEpoch
+                  
+                  Color.red
+                    .frame(width: widthPerSecond*duration)
+                    .position(x: widthPerSecond*timeFromStartOfDay, y: 22)
                 }
               }
               .frame(height: 44)
+              let times = ["", "3am", "6am", "9am", "12pm", "3pm", "6pm", "9pm"]
+              HStack {
+                ForEach(times, id:\.self) { time in
+                  Text(time)
+                    .font(.caption)
+                    .foregroundColor(Color(UIColor.systemGray))
+                  Spacer()
+                }
+              }
             }
             
             if commits.isEmpty {
               NoDataView()
             } else {
-              Section(header: Text("Commits")) {
+              Section(header: Text("Commits (\(commits.count))")) {
                 GeometryReader { proxy in
                   let space = getTimeRanges(from: commits.reversed().map({ ($0.commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0) }))
                   let widthPerSecond = (proxy.size.width)/divider
@@ -122,7 +130,15 @@ struct ProjectPage: View {
                   }
                 }
                 .frame(height: 44)
-                
+                let times = ["", "3am", "6am", "9am", "12pm", "3pm", "6pm", "9pm"]
+                HStack {
+                  ForEach(times, id:\.self) { time in
+                    Text(time)
+                      .font(.caption)
+                      .foregroundColor(Color(UIColor.systemGray))
+                    Spacer()
+                  }
+                }
                 ForEach(commits) { commit in
                   HStack {
                     VStack(alignment: .leading) {
@@ -209,7 +225,8 @@ struct ProjectPage: View {
             url,
             parameters: [
               "date": date,
-              "project": project
+              "project": project,
+              "timeout": 15
             ],
             headers: .init([.authorization(bearerToken: token)])
           ).responseDecodable(
@@ -291,7 +308,7 @@ func generateDailyComparisonInsight(codingTime: Double, commits: Int, lowThresho
     case 0.25..<0.75:
         timeSpecificMessage = "You're in the middle of your workday. "
         
-    case 0.75...:
+    case 0.75...1:
         timeSpecificMessage = "It's the final stretch of the workday. "
         
     default:
