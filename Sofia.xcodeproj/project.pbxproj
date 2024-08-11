@@ -10,6 +10,7 @@
 		6B5380DF2C67329300414D8A /* HistoryPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5380DE2C67329300414D8A /* HistoryPage.swift */; };
 		6B5380E12C67348200414D8A /* AllTimeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5380E02C67348100414D8A /* AllTimeModel.swift */; };
 		6B5380E32C6739AC00414D8A /* ProjectModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5380E22C6739AC00414D8A /* ProjectModel.swift */; };
+		6B6E14482C687ABC00D32C12 /* DurationModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B6E14472C687ABC00D32C12 /* DurationModel.swift */; };
 		6B7627BA2C6601C400B9F17B /* SofiaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B7627B92C6601C400B9F17B /* SofiaApp.swift */; };
 		6B7627BC2C6601C400B9F17B /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B7627BB2C6601C400B9F17B /* ContentView.swift */; };
 		6B7627BE2C6601C600B9F17B /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 6B7627BD2C6601C600B9F17B /* Assets.xcassets */; };
@@ -36,6 +37,7 @@
 		6B5380DE2C67329300414D8A /* HistoryPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryPage.swift; sourceTree = "<group>"; };
 		6B5380E02C67348100414D8A /* AllTimeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllTimeModel.swift; sourceTree = "<group>"; };
 		6B5380E22C6739AC00414D8A /* ProjectModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectModel.swift; sourceTree = "<group>"; };
+		6B6E14472C687ABC00D32C12 /* DurationModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DurationModel.swift; sourceTree = "<group>"; };
 		6B7627B62C6601C400B9F17B /* Sofia.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Sofia.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		6B7627B92C6601C400B9F17B /* SofiaApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SofiaApp.swift; sourceTree = "<group>"; };
 		6B7627BB2C6601C400B9F17B /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -112,6 +114,7 @@
 				6B5380E02C67348100414D8A /* AllTimeModel.swift */,
 				6B5380E22C6739AC00414D8A /* ProjectModel.swift */,
 				6BC954652C68452B0074D5FC /* StatusBarView.swift */,
+				6B6E14472C687ABC00D32C12 /* DurationModel.swift */,
 			);
 			path = Sofia;
 			sourceTree = "<group>";
@@ -219,6 +222,7 @@
 				6B5380E12C67348200414D8A /* AllTimeModel.swift in Sources */,
 				6B7627F52C665EE600B9F17B /* LogPage.swift in Sources */,
 				6BC954662C68452B0074D5FC /* StatusBarView.swift in Sources */,
+				6B6E14482C687ABC00D32C12 /* DurationModel.swift in Sources */,
 				6B7627CF2C66122800B9F17B /* Configuration.swift in Sources */,
 				6B7627D72C66234F00B9F17B /* StatusBarModel.swift in Sources */,
 				6B7627BC2C6601C400B9F17B /* ContentView.swift in Sources */,

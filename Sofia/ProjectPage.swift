@@ -14,6 +14,7 @@ struct ProjectPage: View {
   @State var commits: [CommitModel] = []
   @State var error: Error?
   @State var isProcessing: Bool = false
+  @State var durations: [DurationModel.Datum] = []
   let project: String
   let seconds: Double
   let start: String
@@ -46,28 +47,50 @@ struct ProjectPage: View {
           .padding(.horizontal, 32)
           .padding(.vertical, 32)
         } else {
-          if commits.isEmpty {
-            NoDataView()
-          } else {
-            List {
-              Section {
-                let lowThresholdCoding = 2.0
-                let highThresholdCoding = 6.0
-                let lowThresholdCommits = 5
-                let highThresholdCommits = 12
-                
-                let insight = generateDailyComparisonInsight(
-                    codingTime: seconds / (divider/24),
-                    commits: commits.count,
-                    lowThresholdCoding: lowThresholdCoding,
-                    highThresholdCoding: highThresholdCoding,
-                    lowThresholdCommits: lowThresholdCommits,
-                    highThresholdCommits: highThresholdCommits
-                )
-                
-                Text(insight).font(.title)
-              }
+          List {
+            Section {
+              let lowThresholdCoding = 2.0
+              let highThresholdCoding = 6.0
+              let lowThresholdCommits = 5
+              let highThresholdCommits = 12
               
+              let insight = generateDailyComparisonInsight(
+                  codingTime: seconds / (divider/24),
+                  commits: commits.count,
+                  lowThresholdCoding: lowThresholdCoding,
+                  highThresholdCoding: highThresholdCoding,
+                  lowThresholdCommits: lowThresholdCommits,
+                  highThresholdCommits: highThresholdCommits
+              )
+              
+              Text(insight).font(.title)
+            }
+            
+            Section(
+              header: HStack {
+                Text("❤️")
+                Text("Heart Beat")
+              },
+              footer: Text("A single commit from a WakaTime project showing the time spent coding on the commit.")
+                .font(.caption)
+                .foregroundColor(Color(UIColor.systemGray))
+            ) {
+              GeometryReader { proxy in
+                let widthPerSecond = (proxy.size.width-CGFloat(durations.count))/seconds
+                HStack(spacing: 1) {
+                  ForEach(durations) { duration in
+                    let second = (duration.duration ?? 0)
+                    Color.red
+                      .frame(width: widthPerSecond*second)
+                  }
+                }
+              }
+              .frame(height: 44)
+            }
+            
+            if commits.isEmpty {
+              NoDataView()
+            } else {
               Section(header: Text("Commits")) {
                 ForEach(commits) { commit in
                   HStack {
@@ -95,8 +118,8 @@ struct ProjectPage: View {
                 }
               }
             }
-            .listStyle(.plain)
           }
+          .listStyle(.plain)
         }
       }
     }
@@ -116,13 +139,17 @@ struct ProjectPage: View {
           switch response.result {
           case .success(let data):
             guard let user = data.login,
-                  let url = URL(string: "https://api.github.com/repos/\(user)/\(project)/commits?since=\(start)&until=\(end)") else {
+                  let url = URL(string: "https://api.github.com/repos/\(user)/\(project)/commits") else {
               isProcessing = false
               error = NSError(domain: "Sofia", code: 404)
               return
             }
             AF.request(
               url,
+              parameters: [
+                "since": start,
+                "until": end
+              ],
               headers: .init([.authorization(bearerToken: token)])
             ).responseDecodable(
               of: [CommitModel].self,
@@ -133,12 +160,38 @@ struct ProjectPage: View {
               case .success(let data):
                 self.commits = data
               case .failure(let error):
-                self.error = error
+//                self.error = error
+                print(error)
               }
             }
           case .failure(let error):
             isProcessing = false
             self.error = error
+          }
+        }
+        if let token = KeychainSwift().get("stringToken"),
+           let date = start.toDate()?.toString(with: "YYYY-MM-dd"),
+           let url = URL(string: "https://wakatime.com/api/v1/users/current/durations"),
+           !token.isEmpty {
+          AF.request(
+            url,
+            parameters: [
+              "date": date,
+              "project": project
+            ],
+            headers: .init([.authorization(bearerToken: token)])
+          ).responseDecodable(
+            of: DurationModel.self,
+            decoder: decoder
+          ) { response in
+            switch response.result {
+            case .success(let data):
+              self.durations = data.data ?? []
+            case .failure(let error):
+              isProcessing = false
+              print(error)
+//              self.error = error
+            }
           }
         }
       } else {
