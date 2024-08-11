@@ -97,7 +97,7 @@ struct ProjectPage: View {
                   let timeFromStartOfDay = time - startOfDayEpoch
                   
                   Color.red
-                    .frame(width: widthPerSecond*duration)
+                    .frame(width: max(0.5,widthPerSecond*duration))
                     .position(x: widthPerSecond*timeFromStartOfDay, y: 22)
                 }
               }
