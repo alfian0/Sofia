@@ -29,13 +29,14 @@ struct OnboardingPage: View {
       Text("Stop tracking work manually - Automate it and reclaim your time.")
         .font(.largeTitle)
       
-      GeometryReader { proxy in
-        Image("Delivery")
-          .resizable()
-          .scaledToFit()
-          .frame(maxWidth: proxy.size.width/1.2)
-          .position(x: proxy.frame(in: .local).midX, y: proxy.frame(in: .local).midY)
+      Spacer()
+      HStack {
+        Spacer()
+        Text("🐵🙈🙉🙊")
+          .font(.system(size: 70))
+        Spacer()
       }
+      Spacer()
       
       Button {
         guard !isProcessing else {

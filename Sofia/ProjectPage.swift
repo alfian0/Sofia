@@ -13,6 +13,7 @@ import SDWebImageSwiftUI
 struct ProjectPage: View {
   @State var commits: [CommitModel] = []
   @State var error: Error?
+  @State var isProcessing: Bool = false
   let project: String
   let seconds: Double
   let start: String
@@ -28,73 +29,75 @@ struct ProjectPage: View {
   
   var body: some View {
     VStack {
-      if let error = error {
-        VStack {
-          GeometryReader { proxy in
-            Image("Delivery")
-              .resizable()
-              .scaledToFit()
-              .frame(maxWidth: proxy.size.width/2)
-              .position(x: proxy.frame(in: .local).midX, y: proxy.frame(in: .local).midY)
-          }
-          
+      if isProcessing {
+        ProgressView()
+      } else {
+        if let error = error {
           VStack {
-            Text("Not Found")
-              .font(.title)
-            Text(error.localizedDescription)
-              .multilineTextAlignment(.center)
-          }
-        }
-        .padding(.horizontal, 32)
-        .padding(.vertical, 32)
-      } else /*if !commits.isEmpty*/ {
-        List {
-          Section {
-            let lowThresholdCoding = 2.0
-            let highThresholdCoding = 6.0
-            let lowThresholdCommits = 5
-            let highThresholdCommits = 12
-            
-            let insight = generateDailyComparisonInsight(
-                codingTime: seconds / (divider/24),
-                commits: commits.count,
-                lowThresholdCoding: lowThresholdCoding,
-                highThresholdCoding: highThresholdCoding,
-                lowThresholdCommits: lowThresholdCommits,
-                highThresholdCommits: highThresholdCommits
-            )
-            
-            Text(insight).font(.title)
-          }
-          
-          Section(header: Text("Commits")) {
-            ForEach(commits) { commit in
-              HStack {
-                VStack(alignment: .leading) {
-                  Text("Message")
-                    .font(.caption)
-                  Text(commit.commit?.message ?? "")
-                  Text(commit.commit?.committer?.date?.toDate()?.toString() ?? "")
-                    .font(.caption)
-                }
-                
-                Spacer()
-                
-                WebImage(url: URL(string: commit.committer?.avatarUrl ?? "")) { image in
-                  image.resizable()
-                } placeholder: {
-                  Rectangle().foregroundColor(Color(UIColor.systemGray6))
-                }
-                .indicator(.activity)
-                .transition(.fade(duration: 0.5))
-                .scaledToFit()
-                .clipShape(Circle())
-                .frame(width: 40, height: 40, alignment: .center)
-              }
+            Text("👻")
+              .font(.system(size: 100))
+            VStack {
+              Text("Not Found")
+                .font(.title)
+              Text(error.localizedDescription)
+                .multilineTextAlignment(.center)
             }
           }
+          .padding(.horizontal, 32)
+          .padding(.vertical, 32)
+        } else {
+          if commits.isEmpty {
+            NoDataView()
+          } else {
+            List {
+              Section {
+                let lowThresholdCoding = 2.0
+                let highThresholdCoding = 6.0
+                let lowThresholdCommits = 5
+                let highThresholdCommits = 12
+                
+                let insight = generateDailyComparisonInsight(
+                    codingTime: seconds / (divider/24),
+                    commits: commits.count,
+                    lowThresholdCoding: lowThresholdCoding,
+                    highThresholdCoding: highThresholdCoding,
+                    lowThresholdCommits: lowThresholdCommits,
+                    highThresholdCommits: highThresholdCommits
+                )
+                
+                Text(insight).font(.title)
+              }
+              
+              Section(header: Text("Commits")) {
+                ForEach(commits) { commit in
+                  HStack {
+                    VStack(alignment: .leading) {
+                      Text("Message")
+                        .font(.caption)
+                      Text(commit.commit?.message ?? "")
+                      Text(commit.commit?.committer?.date?.toDate()?.toString() ?? "")
+                        .font(.caption)
+                    }
+                    
+                    Spacer()
+                    
+                    WebImage(url: URL(string: commit.committer?.avatarUrl ?? "")) { image in
+                      image.resizable()
+                    } placeholder: {
+                      Rectangle().foregroundColor(Color(UIColor.systemGray6))
+                    }
+                    .indicator(.activity)
+                    .transition(.fade(duration: 0.5))
+                    .scaledToFit()
+                    .clipShape(Circle())
+                    .frame(width: 40, height: 40, alignment: .center)
+                  }
+                }
+              }
+            }
+            .listStyle(.plain)
+          }
         }
-        .listStyle(.plain)
       }
     }
     .navigationTitle(project)
@@ -102,6 +105,7 @@ struct ProjectPage: View {
     .onAppear {
       if let token = KeychainSwift().get("githubToken"),
          !token.isEmpty {
+        isProcessing = true
         AF.request(
           URL(string: "https://api.github.com/user")!,
           headers: .init([.authorization(bearerToken: token)])
@@ -113,6 +117,7 @@ struct ProjectPage: View {
           case .success(let data):
             guard let user = data.login,
                   let url = URL(string: "https://api.github.com/repos/\(user)/\(project)/commits?since=\(start)&until=\(end)") else {
+              isProcessing = false
               error = NSError(domain: "Sofia", code: 404)
               return
             }
@@ -123,6 +128,7 @@ struct ProjectPage: View {
               of: [CommitModel].self,
               decoder: decoder
             ) { response in
+              isProcessing = false
               switch response.result {
               case .success(let data):
                 self.commits = data
@@ -131,10 +137,12 @@ struct ProjectPage: View {
               }
             }
           case .failure(let error):
+            isProcessing = false
             self.error = error
           }
         }
       } else {
+        isProcessing = false
         error = NSError(domain: "Sofia", code: 403)
       }
     }

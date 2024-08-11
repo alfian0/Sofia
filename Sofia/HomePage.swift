@@ -11,6 +11,7 @@ import Alamofire
 
 struct HomePage: View {
   @State var statusBar: StatusBarModel.DataClass?
+  @State var isProcessing: Bool = false
   let decoder: JSONDecoder = {
       let decoder = JSONDecoder()
       decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -28,82 +29,30 @@ struct HomePage: View {
     let footer = (now >= startOfWorkday && now <= endOfWorkday) ? "" : "You're outside of your typical working hours."
     
     NavigationView {
-      List {
-        VStack(alignment: .leading) {
-          Text(insight).font(.title)
-          Text(footer).font(.caption).foregroundColor(Color(UIColor.systemGray))
-        }
-        Section(header: Text("Today's Work Hours")) {
-          VStack {
-            HStack {
-              Text(statusBar?.grandTotal?.text ?? "")
-                .fontWeight(.bold)
-              
-              Spacer()
-            }
-            ProgressView(value: codingTime)
+      if isProcessing {
+        ProgressView()
+      } else {
+        List {
+          VStack(alignment: .leading) {
+            Text(insight).font(.title)
+            Text(footer).font(.caption).foregroundColor(Color(UIColor.systemGray))
           }
-          HStack {
-            Text(statusBar?.machines?.first?.name ?? "")
-            Spacer()
-            Text(statusBar?.operatingSystems?.first?.name ?? "")
+          if let statusBar = statusBar,
+             let totalSeconds = statusBar.grandTotal?.totalSeconds,
+             totalSeconds > 0 {
+            StatusBarView(statusBar: statusBar)
+          } else {
+            NoDataView()
           }
         }
-        
-        if let projects = statusBar?.projects {
-          Section(header: Text("Today's Project")) {
-            ForEach(Array(zip(projects.indices, projects)), id:\.0) { project in
-              NavigationLink {
-                ProjectPage(
-                  project: project.1.name ?? "",
-                  seconds: (project.1.totalSeconds ?? 0),
-                  start: statusBar?.range?.start ?? "",
-                  end: statusBar?.range?.end ?? ""
-                )
-              } label: {
-                HStack {
-                  Text(project.1.name ?? "")
-                  Spacer()
-                  ProgressView(value: (project.1.totalSeconds ?? 0)/(statusBar?.grandTotal?.totalSeconds ?? 0))
-                    .frame(width: 200)
-                }
-              }
-            }
-          }
-        }
-        
-        if let languages = statusBar?.languages {
-          Section(header: Text("Today's Languages")) {
-            ForEach(Array(zip(languages.indices, languages)), id:\.0) { language in
-              HStack {
-                Text(language.1.name ?? "")
-                Spacer()
-                ProgressView(value: (language.1.totalSeconds ?? 0)/(statusBar?.grandTotal?.totalSeconds ?? 0))
-                  .frame(width: 200)
-              }
-            }
-          }
-        }
-        
-        if let categories = statusBar?.categories {
-          Section(header: Text("Today's Categories")) {
-            ForEach(Array(zip(categories.indices, categories)), id:\.0) { categorie in
-              HStack {
-                Text(categorie.1.name ?? "")
-                Spacer()
-                ProgressView(value: (categorie.1.totalSeconds ?? 0)/(statusBar?.grandTotal?.totalSeconds ?? 0))
-                  .frame(width: 200)
-              }
-            }
-          }
-        }
+        .listStyle(.plain)
+        .navigationTitle("Today")
       }
-      .listStyle(.plain)
-      .navigationTitle("Today")
     }
     .onAppear {
       if let token = KeychainSwift().get("stringToken"),
          !token.isEmpty {
+        isProcessing = true
         AF.request(
           URL(string: "https://wakatime.com/api/v1/users/current/status_bar/today")!,
           headers: .init([.authorization(bearerToken: token)])
@@ -111,6 +60,7 @@ struct HomePage: View {
           of: StatusBarModel.self,
           decoder: decoder
         ) { response in
+          isProcessing = false
           switch response.result {
           case .success(let data):
             statusBar = data.data
