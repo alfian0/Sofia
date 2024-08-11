@@ -59,7 +59,7 @@ struct ProjectPage: View {
               let endOfWorkday = Calendar.current.date(bySettingHour: 17, minute: 0, second: 0, of: now)!
               
               let insight = generateDailyComparisonInsight(
-                  codingTime: seconds / divider,
+                  codingTime: seconds / (divider / 24),
                   commits: commits.count,
                   lowThresholdCoding: lowThresholdCoding,
                   highThresholdCoding: highThresholdCoding,
@@ -84,8 +84,11 @@ struct ProjectPage: View {
               GeometryReader { proxy in
                 let space = getTimeRanges(from: durations.map({ ($0.time ?? 0) }))
                 let widthPerSecond = (proxy.size.width)/divider
-                
                 HStack(spacing: 0) {
+                  if let first = space.first {
+                    Color.white
+                      .frame(width: widthPerSecond*first)
+                  }
                   ForEach(Array(zip(durations.indices, durations)), id:\.0) { duration in
                     let second = (duration.1.duration ?? 0)
                     HStack(spacing: 0) {
@@ -93,7 +96,7 @@ struct ProjectPage: View {
                         .frame(width: widthPerSecond*second)
                       if duration.0 < (durations.count-1) {
                         Color.white
-                          .frame(width: widthPerSecond*space[duration.0])
+                          .frame(width: widthPerSecond*space[duration.0+1])
                       }
                     }
                   }
@@ -106,6 +109,20 @@ struct ProjectPage: View {
               NoDataView()
             } else {
               Section(header: Text("Commits")) {
+                GeometryReader { proxy in
+                  let space = getTimeRanges(from: commits.reversed().map({ ($0.commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0) }))
+                  let widthPerSecond = (proxy.size.width)/divider
+                  HStack(spacing: 0) {
+                    ForEach(space, id:\.self) { space in
+                      Color.white
+                        .frame(width: widthPerSecond*abs(space))
+                      Color.blue
+                        .frame(width: 1)
+                    }
+                  }
+                }
+                .frame(height: 44)
+                
                 ForEach(commits) { commit in
                   HStack {
                     VStack(alignment: .leading) {
