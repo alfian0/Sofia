@@ -85,17 +85,15 @@ struct ProjectPage: View {
                 let space = getTimeRanges(from: durations.map({ ($0.time ?? 0) }))
                 let widthPerSecond = (proxy.size.width)/divider
                 
-                ScrollView(.horizontal) {
-                  HStack(spacing: 0) {
-                    ForEach(Array(zip(durations.indices, durations)), id:\.0) { duration in
-                      let second = (duration.1.duration ?? 0)
-                      HStack(spacing: 0) {
-                        Color.red
-                          .frame(width: widthPerSecond*second)
-                        if duration.0 < (durations.count-1) {
-                          Color.white
-                            .frame(width: widthPerSecond*space[duration.0])
-                        }
+                HStack(spacing: 0) {
+                  ForEach(Array(zip(durations.indices, durations)), id:\.0) { duration in
+                    let second = (duration.1.duration ?? 0)
+                    HStack(spacing: 0) {
+                      Color.red
+                        .frame(width: widthPerSecond*second)
+                      if duration.0 < (durations.count-1) {
+                        Color.white
+                          .frame(width: widthPerSecond*space[duration.0])
                       }
                     }
                   }
@@ -156,7 +154,8 @@ struct ProjectPage: View {
           switch response.result {
           case .success(let data):
             guard let user = data.login,
-                  let url = URL(string: "https://api.github.com/repos/\(user)/\(project)/commits") else {
+                  let cleanPath = project.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
+                  let url = URL(string: "https://api.github.com/repos/\(user)/\(cleanPath)/commits") else {
               isProcessing = false
               error = NSError(domain: "Sofia", code: 404)
               return
@@ -323,8 +322,19 @@ func getTimeRanges(from epochs: [Double]) -> [Double] {
         return []
     }
     
-    var timeRanges: [TimeInterval] = []
+    var timeRanges: [Double] = []
     
+    // Get the start of the day (12:00 AM) for the first epoch
+    let firstEpochDate = Date(timeIntervalSince1970: epochs[0])
+    let calendar = Calendar.current
+    let startOfDay = calendar.startOfDay(for: firstEpochDate)
+    let startOfDayEpoch = startOfDay.timeIntervalSince1970
+    
+    // Calculate the difference between 12:00 AM and the first epoch time
+    let timeFromStartOfDay = epochs[0] - startOfDayEpoch
+    timeRanges.append(timeFromStartOfDay)
+    
+    // Calculate the differences between consecutive epoch times
     for i in 1..<epochs.count {
         let timeDifference = epochs[i] - epochs[i - 1]
         timeRanges.append(timeDifference)
