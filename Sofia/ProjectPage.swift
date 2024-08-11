@@ -100,6 +100,7 @@ struct ProjectPage: View {
                       Text(commit.commit?.message ?? "")
                       Text(commit.commit?.committer?.date?.toDate()?.toString() ?? "")
                         .font(.caption)
+                        .foregroundColor(Color(UIColor.systemGray))
                     }
                     
                     Spacer()
@@ -159,9 +160,8 @@ struct ProjectPage: View {
               switch response.result {
               case .success(let data):
                 self.commits = data
-              case .failure(let error):
-//                self.error = error
-                print(error)
+              case .failure:
+                self.commits = []
               }
             }
           case .failure(let error):
@@ -187,10 +187,9 @@ struct ProjectPage: View {
             switch response.result {
             case .success(let data):
               self.durations = data.data ?? []
-            case .failure(let error):
+            case .failure:
               isProcessing = false
-              print(error)
-//              self.error = error
+              self.durations = []
             }
           }
         }

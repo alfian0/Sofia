@@ -17,19 +17,21 @@ struct StatusBarView: View {
     
     Section(header: Text("Today's Work Hours")) {
       VStack {
-        HStack {
-          Text(statusBar.grandTotal?.text ?? "")
-            .fontWeight(.bold)
-          
-          Spacer()
+        VStack {
+          HStack {
+            Text(statusBar.grandTotal?.text ?? "")
+              .fontWeight(.bold)
+            
+            Spacer()
+          }
+          ProgressView(value: totalSeconds/divider)
         }
-        ProgressView(value: totalSeconds/divider)
-      }
-      HStack {
-        Text("💻")
-        Text(statusBar.machines?.first?.name ?? "")
-        Spacer()
-        Text(statusBar.operatingSystems?.first?.name ?? "")
+        HStack {
+          Text("💻")
+          Text(statusBar.machines?.last?.name ?? "")
+          Spacer()
+          Text(statusBar.operatingSystems?.last?.name ?? "")
+        }
       }
     }
     

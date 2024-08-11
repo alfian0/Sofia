@@ -29,25 +29,27 @@ struct HomePage: View {
     let footer = (now >= startOfWorkday && now <= endOfWorkday) ? "" : "You're outside of your typical working hours."
     
     NavigationView {
-      if isProcessing {
-        ProgressView()
-      } else {
-        List {
-          VStack(alignment: .leading) {
-            Text(insight).font(.title)
-            Text(footer).font(.caption).foregroundColor(Color(UIColor.systemGray))
+      Group {
+        if isProcessing {
+          ProgressView()
+        } else {
+          List {
+            VStack(alignment: .leading) {
+              Text(insight).font(.title)
+              Text(footer).font(.caption).foregroundColor(Color(UIColor.systemGray))
+            }
+            if let statusBar = statusBar,
+               let totalSeconds = statusBar.grandTotal?.totalSeconds,
+               totalSeconds > 0 {
+              StatusBarView(statusBar: statusBar)
+            } else {
+              NoDataView()
+            }
           }
-          if let statusBar = statusBar,
-             let totalSeconds = statusBar.grandTotal?.totalSeconds,
-             totalSeconds > 0 {
-            StatusBarView(statusBar: statusBar)
-          } else {
-            NoDataView()
-          }
+          .listStyle(.plain)
         }
-        .listStyle(.plain)
-        .navigationTitle("Today")
       }
+      .navigationTitle("Today")
     }
     .onAppear {
       if let token = KeychainSwift().get("stringToken"),
