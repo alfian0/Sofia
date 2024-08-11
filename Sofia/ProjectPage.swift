@@ -20,7 +20,7 @@ struct ProjectPage: View {
   let start: String
   let end: String
   
-  private let divider: Double = 3_600
+  private let divider: Double = 86_400
   
   private let decoder: JSONDecoder = {
       let decoder = JSONDecoder()
@@ -82,12 +82,22 @@ struct ProjectPage: View {
                 .foregroundColor(Color(UIColor.systemGray))
             ) {
               GeometryReader { proxy in
-                let widthPerSecond = (proxy.size.width-CGFloat(durations.count))/seconds
-                HStack(spacing: 1) {
-                  ForEach(durations) { duration in
-                    let second = (duration.duration ?? 0)
-                    Color.red
-                      .frame(width: widthPerSecond*second)
+                let space = getTimeRanges(from: durations.map({ ($0.time ?? 0) }))
+                let widthPerSecond = (proxy.size.width)/divider
+                
+                ScrollView(.horizontal) {
+                  HStack(spacing: 0) {
+                    ForEach(Array(zip(durations.indices, durations)), id:\.0) { duration in
+                      let second = (duration.1.duration ?? 0)
+                      HStack(spacing: 0) {
+                        Color.red
+                          .frame(width: widthPerSecond*second)
+                        if duration.0 < (durations.count-1) {
+                          Color.white
+                            .frame(width: widthPerSecond*space[duration.0])
+                        }
+                      }
+                    }
                   }
                 }
               }
@@ -306,4 +316,19 @@ func generateDailyComparisonInsight(codingTime: Double, commits: Int, lowThresho
     
     // Combine the time-specific message with the general insight
     return timeSpecificMessage + insight
+}
+
+func getTimeRanges(from epochs: [Double]) -> [Double] {
+    guard epochs.count > 1 else {
+        return []
+    }
+    
+    var timeRanges: [TimeInterval] = []
+    
+    for i in 1..<epochs.count {
+        let timeDifference = epochs[i] - epochs[i - 1]
+        timeRanges.append(timeDifference)
+    }
+    
+    return timeRanges
 }
