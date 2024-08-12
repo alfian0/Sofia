@@ -19,6 +19,9 @@ struct ProjectPage: View {
   let seconds: Double
   let start: String
   let end: String
+  private var startOfDay: Double {
+    return Calendar.current.startOfDay(for: start.toDate() ?? Date()).timeIntervalSince1970
+  }
   
   private let divider: Double = 86_400
   
@@ -82,7 +85,6 @@ struct ProjectPage: View {
                 .font(.caption)
                 .foregroundColor(Color(UIColor.systemGray))
             ) {
-              let startOfDay = Calendar.current.startOfDay(for: Date()).timeIntervalSince1970
               let heartbeats = durations.map({ HeartBeatModel(epoch: $0.time ?? 0, duration: $0.duration ?? 0) })
               HeartBeatView(
                 startOfEpoch: startOfDay,
@@ -95,7 +97,6 @@ struct ProjectPage: View {
               NoDataView()
             } else {
               Section(header: Text("Commits (\(commits.count))")) {
-                let startOfDay = Calendar.current.startOfDay(for: Date()).timeIntervalSince1970
                 let heartbeats = commits.reversed()
                   .map({ HeartBeatModel(epoch: $0.commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0, duration: 1) })
                 HeartBeatView(

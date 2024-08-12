@@ -63,7 +63,11 @@ struct HistoryPage: View {
             Section(header: Text("Projects")) {
               ForEach(projects) { project in
                 NavigationLink {
-                  Text(project.name ?? "")
+                  SummariesPage(
+                    start: project.firstHeartbeatAt?.toDate()?.toString(with: "YYYY-MM-dd") ?? "",
+                    end: project.lastHeartbeatAt?.toDate()?.toString(with: "YYYY-MM-dd") ?? "",
+                    project: project.name ?? ""
+                  )
                 } label: {
                   Text(project.name ?? "")
                 }
