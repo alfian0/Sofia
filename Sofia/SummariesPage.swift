@@ -69,8 +69,15 @@ struct SummariesPage: View {
             HStack(alignment: .bottom) {
               ForEach(Array(zip(data.indices, data)), id:\.0) { summarie in
                 let hour = (summarie.1.grandTotal?.totalSeconds ?? 0)/3_600
-                Color.blue
-                  .frame(width: 4, height: (proxy.size.height/24)*hour)
+                ZStack {
+                  Color(UIColor.systemGray6)
+                    .frame(width: 4, height: proxy.size.height)
+                  VStack {
+                    Spacer()
+                    Color.blue
+                      .frame(width: 4, height: (proxy.size.height/24)*hour)
+                  }
+                }
               }
             }
             .frame(height: 60)
