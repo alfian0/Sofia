@@ -63,9 +63,10 @@ struct HistoryPage: View {
             Section(header: Text("Projects")) {
               ForEach(projects) { project in
                 NavigationLink {
+                  let createdAt = project.createdAt?.toDate()?.toString(with: "YYYY-MM-dd")
                   SummariesPage(
-                    start: project.firstHeartbeatAt?.toDate()?.toString(with: "YYYY-MM-dd") ?? "",
-                    end: project.lastHeartbeatAt?.toDate()?.toString(with: "YYYY-MM-dd") ?? "",
+                    start: project.firstHeartbeatAt?.toDate()?.toString(with: "YYYY-MM-dd") ?? createdAt ?? "",
+                    end: project.lastHeartbeatAt?.toDate()?.toString(with: "YYYY-MM-dd") ?? Date().toString(with: "YYYY-MM-dd"),
                     project: project.name ?? ""
                   )
                 } label: {
