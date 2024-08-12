@@ -57,7 +57,7 @@ struct ProjectPage: View {
               let lowThresholdCommits = 5
               let highThresholdCommits = 12
               
-              let now = Date()
+              let now = start.toDate() ?? Date()
               let startOfWorkday = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: now)!
               let endOfWorkday = Calendar.current.date(bySettingHour: 17, minute: 0, second: 0, of: now)!
               
@@ -249,9 +249,9 @@ func determineRange(for value: Double, lowThreshold: Double, highThreshold: Doub
 func generateDailyComparisonInsight(codingTime: Double, commits: Int, lowThresholdCoding: Double, highThresholdCoding: Double, lowThresholdCommits: Int, highThresholdCommits: Int, startOfWorkday: Date, endOfWorkday: Date) -> String {
     
     // Calculate the current time and workday progress
-    let now = Date()
+    let now = Calendar.current.isDateInToday(startOfWorkday) ? Date() : Calendar.current.startOfDay(for: startOfWorkday)
     let totalWorkdayDuration = endOfWorkday.timeIntervalSince(startOfWorkday)
-    let elapsedWorkdayDuration = now.timeIntervalSince(startOfWorkday)
+    let elapsedWorkdayDuration = abs(now.timeIntervalSince(startOfWorkday))
     let workdayProgress = elapsedWorkdayDuration / totalWorkdayDuration
     
     // Adjust thresholds based on workday progress
