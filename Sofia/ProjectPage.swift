@@ -82,63 +82,26 @@ struct ProjectPage: View {
                 .font(.caption)
                 .foregroundColor(Color(UIColor.systemGray))
             ) {
-              GeometryReader { proxy in
-                let widthPerSecond = (proxy.size.width)/divider
-                ForEach(durations) { duration in
-                  let time = duration.time ?? 0
-                  let duration = duration.duration ?? 0
-                  // Get the start of the day (12:00 AM) for the first epoch
-                  let firstEpochDate = Date(timeIntervalSince1970: time)
-                  let calendar = Calendar.current
-                  let startOfDay = calendar.startOfDay(for: firstEpochDate)
-                  let startOfDayEpoch = startOfDay.timeIntervalSince1970
-                  
-                  // Calculate the difference between 12:00 AM and the first epoch time
-                  let timeFromStartOfDay = time - startOfDayEpoch
-                  
-                  Color.red
-                    .frame(width: max(0.5,widthPerSecond*duration))
-                    .position(x: widthPerSecond*timeFromStartOfDay, y: 22)
-                }
-              }
-              .frame(height: 44)
-              let times = ["", "3am", "6am", "9am", "12pm", "3pm", "6pm", "9pm"]
-              HStack {
-                ForEach(times, id:\.self) { time in
-                  Text(time)
-                    .font(.caption)
-                    .foregroundColor(Color(UIColor.systemGray))
-                  Spacer()
-                }
-              }
+              let startOfDay = Calendar.current.startOfDay(for: Date()).timeIntervalSince1970
+              let heartbeats = durations.map({ HeartBeatModel(epoch: $0.time ?? 0, duration: $0.duration ?? 0) })
+              HeartBeatView(
+                startOfEpoch: startOfDay,
+                heartbeats: heartbeats
+              )
             }
             
             if commits.isEmpty {
               NoDataView()
             } else {
               Section(header: Text("Commits (\(commits.count))")) {
-                GeometryReader { proxy in
-                  let space = getTimeRanges(from: commits.reversed().map({ ($0.commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0) }))
-                  let widthPerSecond = (proxy.size.width)/divider
-                  HStack(spacing: 0) {
-                    ForEach(space, id:\.self) { space in
-                      Color.white
-                        .frame(width: widthPerSecond*abs(space))
-                      Color.blue
-                        .frame(width: 1)
-                    }
-                  }
-                }
-                .frame(height: 44)
-                let times = ["", "3am", "6am", "9am", "12pm", "3pm", "6pm", "9pm"]
-                HStack {
-                  ForEach(times, id:\.self) { time in
-                    Text(time)
-                      .font(.caption)
-                      .foregroundColor(Color(UIColor.systemGray))
-                    Spacer()
-                  }
-                }
+                let startOfDay = Calendar.current.startOfDay(for: Date()).timeIntervalSince1970
+                let heartbeats = commits.reversed()
+                  .map({ HeartBeatModel(epoch: $0.commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0, duration: 1) })
+                HeartBeatView(
+                  startOfEpoch: startOfDay,
+                  heartbeats: heartbeats
+                )
+                
                 ForEach(commits) { commit in
                   HStack {
                     VStack(alignment: .leading) {
@@ -349,30 +312,4 @@ func generateDailyComparisonInsight(codingTime: Double, commits: Int, lowThresho
     
     // Combine the time-specific message with the general insight
     return timeSpecificMessage + insight
-}
-
-func getTimeRanges(from epochs: [Double]) -> [Double] {
-    guard epochs.count > 1 else {
-        return []
-    }
-    
-    var timeRanges: [Double] = []
-    
-    // Get the start of the day (12:00 AM) for the first epoch
-    let firstEpochDate = Date(timeIntervalSince1970: epochs[0])
-    let calendar = Calendar.current
-    let startOfDay = calendar.startOfDay(for: firstEpochDate)
-    let startOfDayEpoch = startOfDay.timeIntervalSince1970
-    
-    // Calculate the difference between 12:00 AM and the first epoch time
-    let timeFromStartOfDay = epochs[0] - startOfDayEpoch
-    timeRanges.append(timeFromStartOfDay)
-    
-    // Calculate the differences between consecutive epoch times
-    for i in 1..<epochs.count {
-        let timeDifference = epochs[i] - epochs[i - 1]
-        timeRanges.append(timeDifference)
-    }
-    
-    return timeRanges
 }

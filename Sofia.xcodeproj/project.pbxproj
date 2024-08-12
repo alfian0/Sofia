@@ -31,6 +31,7 @@
 		6B7E69012C670BCF001C5138 /* CommitModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B7E69002C670BCF001C5138 /* CommitModel.swift */; };
 		6BC954662C68452B0074D5FC /* StatusBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC954652C68452B0074D5FC /* StatusBarView.swift */; };
 		6BC954682C68465F0074D5FC /* NoDataView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BC954672C68465F0074D5FC /* NoDataView.swift */; };
+		6BD507242C69BAE900722CDF /* HeartBeatView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6BD507232C69BAE900722CDF /* HeartBeatView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -58,6 +59,7 @@
 		6B7E69002C670BCF001C5138 /* CommitModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CommitModel.swift; sourceTree = "<group>"; };
 		6BC954652C68452B0074D5FC /* StatusBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatusBarView.swift; sourceTree = "<group>"; };
 		6BC954672C68465F0074D5FC /* NoDataView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NoDataView.swift; sourceTree = "<group>"; };
+		6BD507232C69BAE900722CDF /* HeartBeatView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HeartBeatView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -115,6 +117,7 @@
 				6B5380E22C6739AC00414D8A /* ProjectModel.swift */,
 				6BC954652C68452B0074D5FC /* StatusBarView.swift */,
 				6B6E14472C687ABC00D32C12 /* DurationModel.swift */,
+				6BD507232C69BAE900722CDF /* HeartBeatView.swift */,
 			);
 			path = Sofia;
 			sourceTree = "<group>";
@@ -230,6 +233,7 @@
 				6B7627DF2C66411C00B9F17B /* UserPage.swift in Sources */,
 				6B5380DF2C67329300414D8A /* HistoryPage.swift in Sources */,
 				6B7E68FF2C67080D001C5138 /* ProjectPage.swift in Sources */,
+				6BD507242C69BAE900722CDF /* HeartBeatView.swift in Sources */,
 				6B7E69012C670BCF001C5138 /* CommitModel.swift in Sources */,
 				6B7627BA2C6601C400B9F17B /* SofiaApp.swift in Sources */,
 				6B7627DD2C6640A800B9F17B /* UserModel.swift in Sources */,
