@@ -86,7 +86,8 @@ struct ProjectPage: View {
               let heartbeats = durations.map({ HeartBeatModel(epoch: $0.time ?? 0, duration: $0.duration ?? 0) })
               HeartBeatView(
                 startOfEpoch: startOfDay,
-                heartbeats: heartbeats
+                heartbeats: heartbeats,
+                tintColor: .red
               )
             }
             
@@ -99,7 +100,8 @@ struct ProjectPage: View {
                   .map({ HeartBeatModel(epoch: $0.commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0, duration: 1) })
                 HeartBeatView(
                   startOfEpoch: startOfDay,
-                  heartbeats: heartbeats
+                  heartbeats: heartbeats,
+                  tintColor: .blue
                 )
                 
                 ForEach(commits) { commit in

@@ -17,6 +17,7 @@ struct HeartBeatView: View {
   private let times = ["", "3am", "6am", "9am", "12pm", "3pm", "6pm", "9pm"]
   let startOfEpoch: Double
   let heartbeats: [HeartBeatModel]
+  let tintColor: Color
   
   var body: some View {
     VStack {
@@ -27,7 +28,7 @@ struct HeartBeatView: View {
           let duration = heartbeat.duration
           let timeFromStartOfDay = time - startOfEpoch
           
-          Color.red
+          tintColor
             .frame(width: max(0.5,widthPerSecond*duration))
             .position(x: widthPerSecond*timeFromStartOfDay, y: 22)
         }
@@ -51,7 +52,8 @@ struct HeartBeatView_Previews: PreviewProvider {
         startOfEpoch: 1723420800,
         heartbeats: [
           HeartBeatModel(epoch: 1723424400, duration: 120)
-        ]
+        ],
+        tintColor: .blue
       )
     }
 }
