@@ -64,6 +64,19 @@ struct SummariesPage: View {
       
       Section(header: Text("Log Histories")) {
         let data = (summaries?.data ?? []).reversed()
+        ScrollView(.horizontal) {
+          GeometryReader { proxy in
+            HStack(alignment: .bottom) {
+              ForEach(Array(zip(data.indices, data)), id:\.0) { summarie in
+                let hour = (summarie.1.grandTotal?.totalSeconds ?? 0)/3_600
+                Color.blue
+                  .frame(width: 4, height: (proxy.size.height/24)*hour)
+              }
+            }
+            .frame(height: 60)
+          }
+        }
+        .frame(height: 60)
         ForEach(Array(zip(data.indices, data)), id:\.0) { summarie in
           VStack(alignment: .leading, spacing: 8) {
             HStack(alignment: .top) {
@@ -73,6 +86,7 @@ struct SummariesPage: View {
               Text(summarie.1.grandTotal?.text ?? "")
                 .font(.caption)
                 .fontWeight(.bold)
+                .foregroundColor(.green)
             }
             
             VStack(alignment: .leading, spacing: 8) {
