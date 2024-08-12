@@ -2,44 +2,44 @@
 //  CommitModel.swift
 //  Sofia
 //
-//  Created by alfian on 10/08/24.
+//  Created by alfian on 12/08/24.
 //
 
 import Foundation
 
-// MARK: - CommitModelElement
-struct CommitModel: Codable, Identifiable {
-  var id: String {
-    return UUID().uuidString
-  }
+// MARK: - CommitModel
+struct CommitModel: Codable {
+  let url: String?
   let sha, nodeID: String?
+  let htmlURL, commentsURL: String?
   let commit: Commit?
-  let url, htmlUrl, commentsUrl: String?
   let author, committer: CommitModelAuthor?
-  let parents: [Parent]?
+  let parents: [Tree]?
+  let stats: Stats?
+  let files: [File]?
   
   // MARK: - CommitModelAuthor
   struct CommitModelAuthor: Codable {
       let login: String?
       let id: Int?
       let nodeID: String?
-      let avatarUrl: String?
+      let avatarURL: String?
       let gravatarID: String?
-      let url, htmlUrl, followersUrl: String?
-      let followingUrl, gistsUrl, starredUrl: String?
-      let subscriptionsUrl, organizationsUrl, reposUrl: String?
-      let eventsUrl: String?
-      let receivedEventsUrl: String?
+      let url, htmlURL, followersURL: String?
+      let followingURL, gistsURL, starredURL: String?
+      let subscriptionsURL, organizationsURL, reposURL: String?
+      let eventsURL: String?
+      let receivedEventsURL: String?
       let type: String?
       let siteAdmin: Bool?
   }
 
   // MARK: - Commit
   struct Commit: Codable {
+      let url: String?
       let author, committer: CommitAuthor?
       let message: String?
       let tree: Tree?
-      let url: String?
       let commentCount: Int?
       let verification: Verification?
   }
@@ -52,8 +52,8 @@ struct CommitModel: Codable, Identifiable {
 
   // MARK: - Tree
   struct Tree: Codable {
-      let sha: String?
       let url: String?
+      let sha: String?
   }
 
   // MARK: - Verification
@@ -63,33 +63,17 @@ struct CommitModel: Codable, Identifiable {
       let signature, payload: String?
   }
 
-  // MARK: - Parent
-  struct Parent: Codable {
-      let sha: String?
-      let url, htmlUrl: String?
+  // MARK: - File
+  struct File: Codable {
+      let filename: String?
+      let additions, deletions, changes: Int?
+      let status: String?
+      let rawURL, blobURL: String?
+      let patch: String?
   }
-}
 
-struct GithubUserModel: Codable {
-    let login: String?
-    let id: Int?
-    let nodeID: String?
-    let avatarURL: String?
-    let gravatarID: String?
-    let url, htmlURL, followersURL: String?
-    let followingURL, gistsURL, starredURL: String?
-    let subscriptionsURL, organizationsURL, reposURL: String?
-    let eventsURL: String?
-    let receivedEventsURL: String?
-    let type: String?
-    let siteAdmin: Bool?
-    let name, company: String?
-    let blog: String?
-    let location, email: String?
-    let hireable: Bool?
-    let bio: String?
-    let twitterUsername: String?
-    let notificationEmail: String?
-    let publicRepos, publicGists, followers, following: Int?
-    let createdAt, updatedAt: String?
+  // MARK: - Stats
+  struct Stats: Codable {
+      let additions, deletions, total: Int?
+  }
 }

@@ -11,7 +11,7 @@ import Alamofire
 import SDWebImageSwiftUI
 
 struct ProjectPage: View {
-  @State var commits: [CommitModel] = []
+  @State var commits: [CommitsModel] = []
   @State var error: Error?
   @State var isProcessing: Bool = false
   @State var durations: [DurationModel.Datum] = []
@@ -106,28 +106,36 @@ struct ProjectPage: View {
                 )
                 
                 ForEach(commits) { commit in
-                  HStack {
-                    VStack(alignment: .leading) {
-                      Text("Message")
-                        .font(.caption)
-                      Text(commit.commit?.message ?? "")
-                      Text(commit.commit?.committer?.date?.toDate()?.toString() ?? "")
-                        .font(.caption)
-                        .foregroundColor(Color(UIColor.systemGray))
+                  NavigationLink {
+                    CommitPage(
+                      owner: commit.author?.login ?? "",
+                      repo: project,
+                      ref: commit.sha ?? ""
+                    )
+                  } label: {
+                    HStack {
+                      VStack(alignment: .leading) {
+                        Text("Message")
+                          .font(.caption)
+                        Text(commit.commit?.message ?? "")
+                        Text(commit.commit?.committer?.date?.toDate()?.toString() ?? "")
+                          .font(.caption)
+                          .foregroundColor(Color(UIColor.systemGray))
+                      }
+                      
+                      Spacer()
+                      
+                      WebImage(url: URL(string: commit.committer?.avatarUrl ?? "")) { image in
+                        image.resizable()
+                      } placeholder: {
+                        Rectangle().foregroundColor(Color(UIColor.systemGray6))
+                      }
+                      .indicator(.activity)
+                      .transition(.fade(duration: 0.5))
+                      .scaledToFit()
+                      .clipShape(Circle())
+                      .frame(width: 40, height: 40, alignment: .center)
                     }
-                    
-                    Spacer()
-                    
-                    WebImage(url: URL(string: commit.committer?.avatarUrl ?? "")) { image in
-                      image.resizable()
-                    } placeholder: {
-                      Rectangle().foregroundColor(Color(UIColor.systemGray6))
-                    }
-                    .indicator(.activity)
-                    .transition(.fade(duration: 0.5))
-                    .scaledToFit()
-                    .clipShape(Circle())
-                    .frame(width: 40, height: 40, alignment: .center)
                   }
                 }
               }
@@ -167,7 +175,7 @@ struct ProjectPage: View {
               ],
               headers: .init([.authorization(bearerToken: token)])
             ).responseDecodable(
-              of: [CommitModel].self,
+              of: [CommitsModel].self,
               decoder: decoder
             ) { response in
               isProcessing = false
