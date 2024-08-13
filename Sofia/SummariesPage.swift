@@ -171,6 +171,7 @@ struct SummariesPage: View {
             }
             NavigationLink {
               ProjectPage(
+                showDetail: .constant(false),
                 project: project,
                 seconds: (summarie.1.grandTotal?.totalSeconds ?? 0),
                 start: summarie.1.range?.start ?? "",

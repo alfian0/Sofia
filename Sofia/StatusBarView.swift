@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct StatusBarView: View {
+  @State private var showDetail = false
   let statusBar: StatusBarModel.DataClass
   let divider: Double = 86_400
   let procectChars: [String] = ["🧑🏻‍💻", "👨🏼‍💻", "👩🏻‍💻"]
@@ -38,13 +39,8 @@ struct StatusBarView: View {
     if let projects = statusBar.projects {
       Section(header: Text("Today's Project")) {
         ForEach(Array(zip(projects.indices, projects)), id:\.0) { project in
-          NavigationLink {
-            ProjectPage(
-              project: project.1.name ?? "",
-              seconds: (project.1.totalSeconds ?? 0),
-              start: statusBar.range?.start ?? "",
-              end: statusBar.range?.end ?? ""
-            )
+          Button {
+            showDetail.toggle()
           } label: {
             HStack {
               Text(procectChars.randomElement() ?? "🧑🏻‍💻")
@@ -52,6 +48,22 @@ struct StatusBarView: View {
               Spacer()
               ProgressView(value: (project.1.totalSeconds ?? 0)/totalSeconds)
                 .frame(width: 200)
+            }
+          }
+          .fullScreenCover(isPresented: $showDetail) {
+            NavigationView {
+              ProjectPage(
+                showDetail: $showDetail,
+                project: project.1.name ?? "",
+                seconds: (project.1.totalSeconds ?? 0),
+                start: statusBar.range?.start ?? "",
+                end: statusBar.range?.end ?? ""
+              )
+              .navigationBarItems(leading: Button(action: {
+                showDetail = false
+              }, label: {
+                Image(systemName: "chevron.left")
+              }))
             }
           }
         }
