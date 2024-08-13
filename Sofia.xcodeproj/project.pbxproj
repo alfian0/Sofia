@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		6B2B1B692C6B1B290091641A /* HomePageViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B2B1B682C6B1B290091641A /* HomePageViewModel.swift */; };
 		6B5380DF2C67329300414D8A /* HistoryPage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5380DE2C67329300414D8A /* HistoryPage.swift */; };
 		6B5380E12C67348200414D8A /* AllTimeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5380E02C67348100414D8A /* AllTimeModel.swift */; };
 		6B5380E32C6739AC00414D8A /* ProjectModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B5380E22C6739AC00414D8A /* ProjectModel.swift */; };
@@ -39,6 +40,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		6B2B1B682C6B1B290091641A /* HomePageViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomePageViewModel.swift; sourceTree = "<group>"; };
 		6B5380DE2C67329300414D8A /* HistoryPage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryPage.swift; sourceTree = "<group>"; };
 		6B5380E02C67348100414D8A /* AllTimeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AllTimeModel.swift; sourceTree = "<group>"; };
 		6B5380E22C6739AC00414D8A /* ProjectModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectModel.swift; sourceTree = "<group>"; };
@@ -85,6 +87,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		6B2B1B672C6B1B040091641A /* Home */ = {
+			isa = PBXGroup;
+			children = (
+				6BC954652C68452B0074D5FC /* StatusBarView.swift */,
+				6B7627F22C664F9600B9F17B /* HomePage.swift */,
+				6B2B1B682C6B1B290091641A /* HomePageViewModel.swift */,
+			);
+			path = Home;
+			sourceTree = "<group>";
+		};
 		6B7627AD2C6601C400B9F17B = {
 			isa = PBXGroup;
 			children = (
@@ -104,6 +116,7 @@
 		6B7627B82C6601C400B9F17B /* Sofia */ = {
 			isa = PBXGroup;
 			children = (
+				6B2B1B672C6B1B040091641A /* Home */,
 				6B7627CB2C66118400B9F17B /* Configuration */,
 				6B7627CA2C66032D00B9F17B /* Info.plist */,
 				6B7627B92C6601C400B9F17B /* SofiaApp.swift */,
@@ -115,7 +128,6 @@
 				6B7627DC2C6640A800B9F17B /* UserModel.swift */,
 				6BC954672C68465F0074D5FC /* NoDataView.swift */,
 				6B7627DE2C66411C00B9F17B /* UserPage.swift */,
-				6B7627F22C664F9600B9F17B /* HomePage.swift */,
 				6B7627F42C665EE600B9F17B /* LogPage.swift */,
 				6B7627F62C665F1400B9F17B /* LogModel.swift */,
 				6B7E68FE2C67080D001C5138 /* ProjectPage.swift */,
@@ -123,7 +135,6 @@
 				6B5380DE2C67329300414D8A /* HistoryPage.swift */,
 				6B5380E02C67348100414D8A /* AllTimeModel.swift */,
 				6B5380E22C6739AC00414D8A /* ProjectModel.swift */,
-				6BC954652C68452B0074D5FC /* StatusBarView.swift */,
 				6B6E14472C687ABC00D32C12 /* DurationModel.swift */,
 				6BD507232C69BAE900722CDF /* HeartBeatView.swift */,
 				6BD507252C69C38100722CDF /* SummariesPage.swift */,
@@ -254,6 +265,7 @@
 				6B7627DB2C662EBD00B9F17B /* OnboardingPage.swift in Sources */,
 				6B7627F72C665F1400B9F17B /* LogModel.swift in Sources */,
 				6BC954682C68465F0074D5FC /* NoDataView.swift in Sources */,
+				6B2B1B692C6B1B290091641A /* HomePageViewModel.swift in Sources */,
 				6B69251D2C69FF4500EA0EE8 /* CommitModel.swift in Sources */,
 				6B69251F2C69FFBB00EA0EE8 /* CommitPage.swift in Sources */,
 				6B7627F32C664F9600B9F17B /* HomePage.swift in Sources */,
