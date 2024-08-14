@@ -31,8 +31,8 @@ targets:
         name: SwiftLint
     settings:
       base:
-        INFOPLIST_FILE: Sofia/Info.plist
-        PRODUCT_BUNDLE_IDENTIFIER: $(PRODUCT_BUNDLE_IDENTIFIER)
+#        INFOPLIST_FILE: Sofia/Info.plist
+#        PRODUCT_BUNDLE_IDENTIFIER: $(PRODUCT_BUNDLE_IDENTIFIER)
         SWIFT_VERSION: 5.0
         DEVELOPMENT_TEAM: "9GE8EQEDQB"
         ENABLE_BITCODE: false
