@@ -8,6 +8,7 @@
 import Foundation
 
 // MARK: - DurationModel
+
 struct DurationModel: Codable {
   let data: [Datum]?
   let start, end: String?
@@ -16,10 +17,12 @@ struct DurationModel: Codable {
   let branches, availableBranches: [String]?
 
   // MARK: - Datum
+
   struct Datum: Codable, Identifiable {
     var id: String {
       return UUID().uuidString
     }
+
     let entity: String?
     let type: String?
     let time: Double?

@@ -5,8 +5,8 @@
 //  Created by alfian on 09/08/24.
 //
 
-import SwiftUI
 import KeychainSwift
+import SwiftUI
 
 struct ContentView: View {
   @State private var isAuthorized = false
@@ -39,7 +39,8 @@ struct ContentView: View {
     }
     .onAppear {
       if let token = KeychainSwift().get("stringToken"),
-         !token.isEmpty {
+         !token.isEmpty
+      {
         isAuthorized = true
       }
     }
@@ -47,7 +48,7 @@ struct ContentView: View {
 }
 
 struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-      ContentView()
-    }
+  static var previews: some View {
+    ContentView()
+  }
 }

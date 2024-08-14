@@ -23,7 +23,7 @@ extension Date {
     let dateFormatter = DateFormatter()
     dateFormatter.timeZone = TimeZone(identifier: identifier)
     dateFormatter.dateFormat = format
-    
+
     return dateFormatter.string(from: self)
   }
 }

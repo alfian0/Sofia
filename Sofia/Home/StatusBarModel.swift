@@ -8,12 +8,14 @@
 import Foundation
 
 // MARK: - StatusBarModel
+
 struct StatusBarModel: Codable {
   let cachedAt: String?
   let data: DataClass?
   let hasTeamFeatures: Bool?
-  
+
   // MARK: - DataClass
+
   struct DataClass: Codable {
     let grandTotal: GrandTotal?
     let range: Range?
@@ -22,7 +24,12 @@ struct StatusBarModel: Codable {
   }
 
   // MARK: - Category
-  struct Category: Codable {
+
+  struct Category: Codable, Identifiable {
+    var id: String {
+      return UUID().uuidString
+    }
+
     let name: String?
     let totalSeconds: Double?
     let digital, decimal, text: String?
@@ -32,6 +39,7 @@ struct StatusBarModel: Codable {
   }
 
   // MARK: - GrandTotal
+
   struct GrandTotal: Codable {
     let hours, minutes: Int?
     let totalSeconds: Double?
@@ -39,6 +47,7 @@ struct StatusBarModel: Codable {
   }
 
   // MARK: - Range
+
   struct Range: Codable {
     let start, end: String?
     let date, text, timezone: String?

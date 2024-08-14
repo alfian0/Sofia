@@ -5,9 +5,9 @@
 //  Created by alfian on 09/08/24.
 //
 
-import SwiftUI
-import OAuthSwift
 import KeychainSwift
+import OAuthSwift
+import SwiftUI
 
 struct OnboardingPage: View {
   @Binding var isAuthorized: Bool
@@ -20,7 +20,7 @@ struct OnboardingPage: View {
     accessTokenUrl: "https://wakatime.com/oauth/token",
     responseType: "code"
   )
-  
+
   var body: some View {
     VStack(alignment: .leading, spacing: 32) {
       Text("Sofia")
@@ -28,7 +28,7 @@ struct OnboardingPage: View {
         .fontWeight(.bold)
       Text("Stop tracking work manually - Automate it and reclaim your time.")
         .font(.largeTitle)
-      
+
       Spacer()
       HStack {
         Spacer()
@@ -37,31 +37,31 @@ struct OnboardingPage: View {
         Spacer()
       }
       Spacer()
-      
+
       Button {
         guard !isProcessing else {
           return
         }
-        
+
         isProcessing = true
-        
+
         oauthswift.authorizeURLHandler = SafariURLHandler(
           viewController: UIApplication.shared.windows.first!.rootViewController!,
           oauthSwift: oauthswift
         )
-        
-        let _ = oauthswift.authorize(
+
+        _ = oauthswift.authorize(
           withCallbackURL: URL(string: "sofia://oauth-callback/wakatime")!,
           scope: "email read_stats.languages read_summaries.projects read_summaries read_heartbeats",
           state: "state"
         ) { result in
           isProcessing = false
-          
+
           switch result {
-          case .success(let token):
+          case let .success(token):
             keychain.set(token.credential.oauthToken, forKey: "stringToken")
             isAuthorized = true
-          case .failure(let error):
+          case let .failure(error):
             isAuthorized = false
             print(error.localizedDescription)
           }
@@ -90,20 +90,20 @@ struct OnboardingPage: View {
     }
     .onOpenURL { url in
       isProcessing = true
-      
+
       let notification = Notification(
         name: OAuthSwift.didHandleCallbackURL,
         object: nil,
         userInfo: ["OAuthSwiftCallbackNotificationOptionsURLKey": url]
       )
-      
+
       NotificationCenter.default.post(notification)
     }
   }
 }
 
 struct OnboardingPage_Previews: PreviewProvider {
-    static var previews: some View {
-      OnboardingPage(isAuthorized: .constant(false), isProcessing: .constant(false))
-    }
+  static var previews: some View {
+    OnboardingPage(isAuthorized: .constant(false), isProcessing: .constant(false))
+  }
 }

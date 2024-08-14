@@ -132,6 +132,14 @@
 			path = Utils;
 			sourceTree = "<group>";
 		};
+		6B2B1B762C6B25E30091641A /* Onboarding */ = {
+			isa = PBXGroup;
+			children = (
+				6B7627DA2C662EBD00B9F17B /* OnboardingPage.swift */,
+			);
+			path = Onboarding;
+			sourceTree = "<group>";
+		};
 		6B7627AD2C6601C400B9F17B = {
 			isa = PBXGroup;
 			children = (
@@ -151,6 +159,7 @@
 		6B7627B82C6601C400B9F17B /* Sofia */ = {
 			isa = PBXGroup;
 			children = (
+				6B2B1B762C6B25E30091641A /* Onboarding */,
 				6B2B1B732C6B24410091641A /* Utils */,
 				6B2B1B702C6B23000091641A /* User */,
 				6B2B1B6D2C6B22080091641A /* Log */,
@@ -161,7 +170,6 @@
 				6B7627BB2C6601C400B9F17B /* ContentView.swift */,
 				6B7627BD2C6601C600B9F17B /* Assets.xcassets */,
 				6B7627BF2C6601C600B9F17B /* Preview Content */,
-				6B7627DA2C662EBD00B9F17B /* OnboardingPage.swift */,
 				6BC954672C68465F0074D5FC /* NoDataView.swift */,
 				6B7E68FE2C67080D001C5138 /* ProjectPage.swift */,
 				6B7E69002C670BCF001C5138 /* CommitsModel.swift */,

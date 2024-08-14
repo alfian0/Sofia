@@ -8,10 +8,12 @@
 import Foundation
 
 // MARK: - UserModel
+
 struct UserModel: Codable {
   let data: DataClass?
-  
+
   // MARK: - DataClass
+
   struct DataClass: Codable {
     let id, email, timezone: String?
     let timeout: Int?

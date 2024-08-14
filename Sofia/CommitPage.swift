@@ -5,29 +5,29 @@
 //  Created by alfian on 12/08/24.
 //
 
-import SwiftUI
-import KeychainSwift
 import Alamofire
+import KeychainSwift
+import SwiftUI
 
 struct CommitPage: View {
   @State var commit: CommitModel?
   @State var isProcessing: Bool = false
-  
+
   let owner: String
   let repo: String
   let ref: String
-  
+
   private let decoder: JSONDecoder = {
-      let decoder = JSONDecoder()
-      decoder.keyDecodingStrategy = .convertFromSnakeCase
-      return decoder
+    let decoder = JSONDecoder()
+    decoder.keyDecodingStrategy = .convertFromSnakeCase
+    return decoder
   }()
-  
+
   var body: some View {
     let files = commit?.files ?? []
     List {
       Section(header: Text("Files")) {
-        ForEach(Array(zip(files.indices, files)), id:\.0) { file in
+        ForEach(Array(zip(files.indices, files)), id: \.0) { file in
           HStack {
             Text(file.1.filename ?? "")
               .font(.caption)
@@ -52,9 +52,10 @@ struct CommitPage: View {
     .navigationBarTitle(repo)
     .onAppear {
       if let token = KeychainSwift().get("githubToken"),
-         !token.isEmpty {
+         !token.isEmpty
+      {
         isProcessing = true
-        
+
         AF.request(
           URL(string: "https://api.github.com/repos/\(owner)/\(repo)/commits/\(ref)")!,
           headers: .init([.authorization(bearerToken: token)])
@@ -64,9 +65,9 @@ struct CommitPage: View {
         ) { response in
           isProcessing = false
           switch response.result {
-          case .success(let data):
+          case let .success(data):
             self.commit = data
-          case .failure(let error):
+          case let .failure(error):
             print(error.localizedDescription)
           }
         }

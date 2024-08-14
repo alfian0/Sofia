@@ -5,9 +5,9 @@
 //  Created by alfian on 10/08/24.
 //
 
-import SwiftUI
-import KeychainSwift
 import Alamofire
+import KeychainSwift
+import SwiftUI
 
 struct HistoryPage: View {
   @State private var model: AllTimeModel?
@@ -15,13 +15,13 @@ struct HistoryPage: View {
   @State private var isProcessing: Bool = false
   @State private var selectedProject: ProjectModel.Datum?
   private let decoder: JSONDecoder = {
-      let decoder = JSONDecoder()
-      decoder.keyDecodingStrategy = .convertFromSnakeCase
-      return decoder
+    let decoder = JSONDecoder()
+    decoder.keyDecodingStrategy = .convertFromSnakeCase
+    return decoder
   }()
-  
-  private let divider: Double = 86_400
-  
+
+  private let divider: Double = 86400
+
   var body: some View {
     NavigationView {
       Group {
@@ -38,7 +38,7 @@ struct HistoryPage: View {
                   Text("Total Time")
                 }
                 VStack(alignment: .leading) {
-                  Text("\((model?.data?.dailyAverage ?? 0) / (divider/24)) hrs")
+                  Text("\((model?.data?.dailyAverage ?? 0) / (divider / 24)) hrs")
                     .font(.title)
                     .fontWeight(.bold)
                   Text("Average")
@@ -49,9 +49,9 @@ struct HistoryPage: View {
                       .fontWeight(.bold)
                     Text(model?.data?.range?.startText ?? "")
                   }
-                  
+
                   Spacer()
-                  
+
                   VStack(alignment: .trailing) {
                     Text("to")
                       .fontWeight(.bold)
@@ -60,7 +60,7 @@ struct HistoryPage: View {
                 }
               }
             }
-            
+
             Section(header: Text("Projects")) {
               ForEach(projects) { project in
                 Button {
@@ -92,7 +92,8 @@ struct HistoryPage: View {
       .navigationBarTitle("History")
       .onAppear {
         if let token = KeychainSwift().get("stringToken"),
-           !token.isEmpty {
+           !token.isEmpty
+        {
           isProcessing = true
           AF.request(
             URL(string: "https://wakatime.com/api/v1/users/current/all_time_since_today")!,
@@ -103,13 +104,13 @@ struct HistoryPage: View {
           ) { response in
             isProcessing = false
             switch response.result {
-            case .success(let data):
+            case let .success(data):
               model = data
-            case .failure(let error):
+            case let .failure(error):
               print(error)
             }
           }
-          
+
           AF.request(
             URL(string: "https://wakatime.com/api/v1/users/current/projects")!,
             headers: .init([.authorization(bearerToken: token)])
@@ -119,9 +120,9 @@ struct HistoryPage: View {
           ) { response in
             isProcessing = false
             switch response.result {
-            case .success(let data):
+            case let .success(data):
               projects = data.data ?? []
-            case .failure(let error):
+            case let .failure(error):
               print(error)
             }
           }
@@ -132,7 +133,7 @@ struct HistoryPage: View {
 }
 
 struct HistoryPage_Previews: PreviewProvider {
-    static var previews: some View {
-        HistoryPage()
-    }
+  static var previews: some View {
+    HistoryPage()
+  }
 }

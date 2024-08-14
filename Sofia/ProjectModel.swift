@@ -8,12 +8,14 @@
 import Foundation
 
 // MARK: - ProjectModel
+
 struct ProjectModel: Codable {
   let data: [Datum]?
   let total, totalPages, page: Int?
   let prevPage, nextPage: String?
-  
+
   // MARK: - Datum
+
   struct Datum: Codable, Identifiable {
     let id, name: String?
     let color: String?

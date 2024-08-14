@@ -38,7 +38,7 @@ enum API {
   static var clientSecret: String {
     return (try? Configuration.value(for: "CLIENT_SECRET")) ?? ""
   }
-  
+
   static var githubClientID: String {
     return (try? Configuration.value(for: "GITHUB_CLIENT_ID")) ?? ""
   }
