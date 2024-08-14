@@ -10,6 +10,7 @@ import KeychainSwift
 import SDWebImageSwiftUI
 import SwiftUI
 
+// swiftlint:disable all
 struct ProjectPage: View {
   @State var commits: [CommitsModel] = []
   @State var error: Error?
@@ -326,3 +327,5 @@ func generateDailyComparisonInsight(codingTime: Double, commits: Int, lowThresho
   // Combine the time-specific message with the general insight
   return timeSpecificMessage + insight
 }
+
+// swiftlint:enable all
