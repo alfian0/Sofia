@@ -25,7 +25,8 @@ class LogPageViewModel: ObservableObject {
   }()
 
   func loadLogs() {
-    guard let token = KeychainSwift().get("stringToken"), !token.isEmpty else {
+    guard let token = KeychainSwift().get("stringToken"), !token.isEmpty
+    else {
       viewState = .failure(NSError(domain: "Token not found", code: -1, userInfo: nil))
       return
     }

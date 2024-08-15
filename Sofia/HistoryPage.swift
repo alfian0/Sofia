@@ -20,8 +20,6 @@ struct HistoryPage: View {
     return decoder
   }()
 
-  private let divider: Double = 86400
-
   var body: some View {
     NavigationView {
       Group {
@@ -38,7 +36,7 @@ struct HistoryPage: View {
                   Text("Total Time")
                 }
                 VStack(alignment: .leading) {
-                  Text("\((model?.data?.dailyAverage ?? 0) / (divider / 24)) hrs")
+                  Text("\((model?.data?.dailyAverage ?? 0).secondsToHours) hrs")
                     .font(.title)
                     .fontWeight(.bold)
                   Text("Average")
@@ -92,8 +90,7 @@ struct HistoryPage: View {
       .navigationBarTitle("History")
       .onAppear {
         if let token = KeychainSwift().get("stringToken"),
-           !token.isEmpty
-        {
+           !token.isEmpty {
           isProcessing = true
           AF.request(
             URL(string: "https://wakatime.com/api/v1/users/current/all_time_since_today")!,

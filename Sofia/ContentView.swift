@@ -39,8 +39,7 @@ struct ContentView: View {
     }
     .onAppear {
       if let token = KeychainSwift().get("stringToken"),
-         !token.isEmpty
-      {
+         !token.isEmpty {
         isAuthorized = true
       }
     }

@@ -68,7 +68,7 @@ struct SummariesPage: View {
           GeometryReader { proxy in
             HStack(alignment: .bottom) {
               ForEach(Array(zip(data.indices, data)), id: \.0) { summarie in
-                let hour = (summarie.1.grandTotal?.totalSeconds ?? 0) / 3600
+                let hour = (summarie.1.grandTotal?.totalSeconds ?? 0).secondsToHours
                 ZStack {
                   Color(UIColor.systemGray6)
                     .frame(width: 4, height: proxy.size.height)
@@ -158,7 +158,8 @@ struct SummariesPage: View {
                 Text("Entities")
                   .font(.caption)
                   .fontWeight(.bold)
-                Text(summarie.1.entities?.map { $0.name?.components(separatedBy: "/").last ?? "" }.joined(separator: ", ") ?? "")
+                Text(summarie.1.entities?.map { $0.name?.components(separatedBy: "/").last ?? "" }
+                  .joined(separator: ", ") ?? "")
                   .font(.caption)
               }
               VStack(alignment: .leading, spacing: 4) {
@@ -190,15 +191,14 @@ struct SummariesPage: View {
     .navigationBarTitleDisplayMode(.inline)
     .onAppear {
       if let token = KeychainSwift().get("stringToken"),
-         !token.isEmpty
-      {
+         !token.isEmpty {
         isProcessing = true
         AF.request(
           URL(string: "https://wakatime.com/api/v1/users/current/summaries")!,
           parameters: [
             "start": start,
             "end": end,
-            "project": project,
+            "project": project
           ],
           headers: .init([.authorization(bearerToken: token)])
         ).responseDecodable(

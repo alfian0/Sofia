@@ -39,7 +39,8 @@ struct OnboardingPage: View {
       Spacer()
 
       Button {
-        guard !isProcessing else {
+        guard !isProcessing
+        else {
           return
         }
 

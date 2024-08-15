@@ -52,8 +52,7 @@ struct CommitPage: View {
     .navigationBarTitle(repo)
     .onAppear {
       if let token = KeychainSwift().get("githubToken"),
-         !token.isEmpty
-      {
+         !token.isEmpty {
         isProcessing = true
 
         AF.request(

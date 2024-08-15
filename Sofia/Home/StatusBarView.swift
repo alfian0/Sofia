@@ -10,7 +10,6 @@ import SwiftUI
 struct StatusBarView: View {
   @State private var selectedProject: StatusBarModel.Category?
   var statusBar: StatusBarModel.DataClass
-  let divider: Double = 86400
   let procectChars: [String] = ["🧑🏻‍💻", "👨🏼‍💻", "👩🏻‍💻"]
 
   var body: some View {
@@ -25,7 +24,7 @@ struct StatusBarView: View {
 
             Spacer()
           }
-          ProgressView(value: totalSeconds / divider)
+          ProgressView(value: totalSeconds.secondsToDays)
         }
         HStack {
           Text("💻")

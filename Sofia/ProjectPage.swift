@@ -24,8 +24,6 @@ struct ProjectPage: View {
     return Calendar.current.startOfDay(for: start.toDate() ?? Date()).timeIntervalSince1970
   }
 
-  private let divider: Double = 86400
-
   private let decoder: JSONDecoder = {
     let decoder = JSONDecoder()
     decoder.keyDecodingStrategy = .convertFromSnakeCase
@@ -63,7 +61,7 @@ struct ProjectPage: View {
               let endOfWorkday = Calendar.current.date(bySettingHour: 17, minute: 0, second: 0, of: now)!
 
               let insight = generateDailyComparisonInsight(
-                codingTime: seconds / (divider / 24),
+                codingTime: seconds.secondsToHours,
                 commits: commits.count,
                 lowThresholdCoding: lowThresholdCoding,
                 highThresholdCoding: highThresholdCoding,
@@ -99,7 +97,10 @@ struct ProjectPage: View {
             } else {
               Section(header: Text("Commits (\(commits.count))")) {
                 let heartbeats = commits.reversed()
-                  .map { HeartBeatModel(epoch: $0.commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0, duration: 1) }
+                  .map { HeartBeatModel(
+                    epoch: $0.commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0,
+                    duration: 1
+                  ) }
                 HeartBeatView(
                   startOfEpoch: startOfDay,
                   heartbeats: heartbeats,
@@ -150,8 +151,7 @@ struct ProjectPage: View {
     .navigationBarTitleDisplayMode(.inline)
     .onAppear {
       if let token = KeychainSwift().get("githubToken"),
-         !token.isEmpty
-      {
+         !token.isEmpty {
         isProcessing = true
         AF.request(
           URL(string: "https://api.github.com/user")!,
@@ -174,7 +174,7 @@ struct ProjectPage: View {
               url,
               parameters: [
                 "since": start,
-                "until": end,
+                "until": end
               ],
               headers: .init([.authorization(bearerToken: token)])
             ).responseDecodable(
@@ -197,14 +197,13 @@ struct ProjectPage: View {
         if let token = KeychainSwift().get("stringToken"),
            let date = start.toDate()?.toString(with: "YYYY-MM-dd"),
            let url = URL(string: "https://wakatime.com/api/v1/users/current/durations"),
-           !token.isEmpty
-        {
+           !token.isEmpty {
           AF.request(
             url,
             parameters: [
               "date": date,
               "project": project,
-              "timeout": 15,
+              "timeout": 15
             ],
             headers: .init([.authorization(bearerToken: token)])
           ).responseDecodable(
@@ -258,7 +257,16 @@ func determineRange(for value: Double, lowThreshold: Double, highThreshold: Doub
 }
 
 // Function to generate insights based on coding time and commits
-func generateDailyComparisonInsight(codingTime: Double, commits: Int, lowThresholdCoding: Double, highThresholdCoding: Double, lowThresholdCommits: Int, highThresholdCommits: Int, startOfWorkday: Date, endOfWorkday: Date) -> String {
+func generateDailyComparisonInsight(
+  codingTime: Double,
+  commits: Int,
+  lowThresholdCoding: Double,
+  highThresholdCoding: Double,
+  lowThresholdCommits: Int,
+  highThresholdCommits: Int,
+  startOfWorkday: Date,
+  endOfWorkday: Date
+) -> String {
   // Calculate the current time and workday progress
   let now = Calendar.current.isDateInToday(startOfWorkday) ? Date() : Calendar.current.startOfDay(for: startOfWorkday)
   let totalWorkdayDuration = endOfWorkday.timeIntervalSince(startOfWorkday)
@@ -272,8 +280,16 @@ func generateDailyComparisonInsight(codingTime: Double, commits: Int, lowThresho
   let adjustedHighThresholdCommits = Double(highThresholdCommits) * workdayProgress
 
   // Determine coding time and commits range
-  let codingTimeRange = determineRange(for: codingTime, lowThreshold: adjustedLowThresholdCoding, highThreshold: adjustedHighThresholdCoding)
-  let commitsRange = determineRange(for: Double(commits), lowThreshold: adjustedLowThresholdCommits, highThreshold: adjustedHighThresholdCommits)
+  let codingTimeRange = determineRange(
+    for: codingTime,
+    lowThreshold: adjustedLowThresholdCoding,
+    highThreshold: adjustedHighThresholdCoding
+  )
+  let commitsRange = determineRange(
+    for: Double(commits),
+    lowThreshold: adjustedLowThresholdCommits,
+    highThreshold: adjustedHighThresholdCommits
+  )
 
   // Define messages for each quarter of the day
   var timeSpecificMessage = ""
@@ -300,7 +316,8 @@ func generateDailyComparisonInsight(codingTime: Double, commits: Int, lowThresho
     insight = "Low coding time and low commits. Consider revisiting your tasks or focus to increase productivity."
 
   case (.low, .average):
-    insight = "Low coding time but average commits. You’re efficient, but consider investing more time for sustained progress."
+    insight =
+      "Low coding time but average commits. You’re efficient, but consider investing more time for sustained progress."
 
   case (.low, .high):
     insight = "Low coding time but high commits. You’re very efficient! Make sure the quality is also top-notch."
@@ -315,13 +332,15 @@ func generateDailyComparisonInsight(codingTime: Double, commits: Int, lowThresho
     insight = "Average coding time and high commits. Great job! You're making significant progress."
 
   case (.high, .low):
-    insight = "High coding time but low commits. It could indicate you're tackling complex problems or need to improve efficiency."
+    insight =
+      "High coding time but low commits. It could indicate you're tackling complex problems or need to improve efficiency."
 
   case (.high, .average):
     insight = "High coding time and average commits. You’re working hard; make sure to maintain this momentum."
 
   case (.high, .high):
-    insight = "High coding time and high commits. You’re on fire today! Keep up the excellent work, but don’t forget to take breaks."
+    insight =
+      "High coding time and high commits. You’re on fire today! Keep up the excellent work, but don’t forget to take breaks."
   }
 
   // Combine the time-specific message with the general insight

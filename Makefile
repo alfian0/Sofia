@@ -24,3 +24,13 @@ else
 	echo ""
 endif
 
+commit:
+	@echo Please select the Type:; \
+	echo '1) feat'; \
+	echo '2) fix'; \
+	echo '3) docs'; \
+	echo '4) style'; \
+	echo '5) refactor'; \
+	echo '6) test'; \
+	echo '7) chore'; \
+	read -p 'Enter value: ' result && $(MAKE) CHOICE=$$result got-choice

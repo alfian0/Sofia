@@ -51,7 +51,7 @@ struct HeartBeatView_Previews: PreviewProvider {
     HeartBeatView(
       startOfEpoch: 1_723_420_800,
       heartbeats: [
-        HeartBeatModel(epoch: 1_723_424_400, duration: 120),
+        HeartBeatModel(epoch: 1_723_424_400, duration: 120)
       ],
       tintColor: .blue
     )

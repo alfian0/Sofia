@@ -35,7 +35,8 @@ class UserPageViewModel: ObservableObject {
   )
 
   func loadUser() {
-    guard let token = keychain.get("stringToken"), !token.isEmpty else {
+    guard let token = keychain.get("stringToken"), !token.isEmpty
+    else {
       viewState = .failure(NSError(domain: "Token not found", code: -1, userInfo: nil))
       return
     }

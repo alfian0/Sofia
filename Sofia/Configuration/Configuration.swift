@@ -14,7 +14,8 @@ enum Configuration {
   }
 
   static func value<T>(for key: String) throws -> T where T: LosslessStringConvertible {
-    guard let object = Bundle.main.object(forInfoDictionaryKey: key) else {
+    guard let object = Bundle.main.object(forInfoDictionaryKey: key)
+    else {
       os_log("Missing key: %@", log: .default, type: .error, key)
       throw Error.missingKey
     }
