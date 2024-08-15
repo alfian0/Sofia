@@ -9,6 +9,7 @@ import SwiftUI
 
 struct HomePage: View {
   @StateObject private var viewModel = HomePageViewModel()
+  @State private var selectedProject: StatusBarModel.Category?
 
   var body: some View {
     NavigationView {
@@ -52,12 +53,27 @@ struct HomePage: View {
         }
 
         if let totalSeconds = statusBar.grandTotal?.totalSeconds, totalSeconds > 0 {
-          StatusBarView(statusBar: statusBar)
+          StatusBarView(selectedProject: $selectedProject, statusBar: statusBar)
         } else {
           NoDataView()
         }
       }
       .listStyle(.plain)
+      .fullScreenCover(item: $selectedProject, content: { project in
+        NavigationView {
+          ProjectPage(
+            project: project.name ?? "",
+            seconds: project.totalSeconds ?? 0,
+            start: statusBar.range?.start ?? "",
+            end: statusBar.range?.end ?? ""
+          )
+          .navigationBarItems(leading: Button(action: {
+            selectedProject = nil
+          }, label: {
+            Image(systemName: "chevron.left")
+          }))
+        }
+      })
 
     case let .failure(error):
       VStack {

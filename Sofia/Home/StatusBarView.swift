@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct StatusBarView: View {
-  @State private var selectedProject: StatusBarModel.Category?
+  @Binding var selectedProject: StatusBarModel.Category?
   var statusBar: StatusBarModel.DataClass
   let procectChars: [String] = ["🧑🏻‍💻", "👨🏼‍💻", "👩🏻‍💻"]
 
@@ -51,21 +51,6 @@ struct StatusBarView: View {
           }
         }
       }
-      .fullScreenCover(item: $selectedProject, content: { project in
-        NavigationView {
-          ProjectPage(
-            project: project.name ?? "",
-            seconds: project.totalSeconds ?? 0,
-            start: statusBar.range?.start ?? "",
-            end: statusBar.range?.end ?? ""
-          )
-          .navigationBarItems(leading: Button(action: {
-            selectedProject = nil
-          }, label: {
-            Image(systemName: "chevron.left")
-          }))
-        }
-      })
     }
 
     if let languages = statusBar.languages {

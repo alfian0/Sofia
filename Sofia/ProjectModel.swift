@@ -20,7 +20,7 @@ struct ProjectModel: Codable {
     let id, name: String?
     let color: String?
     let firstHeartbeatAt, lastHeartbeatAt, createdAt: String?
-    let badge: String?
+//    let badge: String?
 //      let clients: [Any?]?
     let humanReadableLastHeartbeatAt: String?
     let repository: String?
