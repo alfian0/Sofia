@@ -9,11 +9,16 @@ import Foundation
 
 // MARK: - CommitModelElement
 
-struct CommitsModel: Codable, Identifiable {
-  var id: String {
-    return UUID().uuidString
+struct CommitsModel: Codable, Identifiable, Hashable {
+  func hash(into hasher: inout Hasher) {
+    hasher.combine(sha)
   }
 
+  static func == (lhs: CommitsModel, rhs: CommitsModel) -> Bool {
+    return lhs.sha == rhs.sha
+  }
+
+  var id = UUID().uuidString
   let sha, nodeID: String?
   let commit: Commit?
   let url, htmlUrl, commentsUrl: String?
@@ -76,28 +81,4 @@ struct CommitsModel: Codable, Identifiable {
     let sha: String?
     let url, htmlUrl: String?
   }
-}
-
-struct GithubUserModel: Codable {
-  let login: String?
-  let id: Int?
-  let nodeID: String?
-  let avatarURL: String?
-  let gravatarID: String?
-  let url, htmlURL, followersURL: String?
-  let followingURL, gistsURL, starredURL: String?
-  let subscriptionsURL, organizationsURL, reposURL: String?
-  let eventsURL: String?
-  let receivedEventsURL: String?
-  let type: String?
-  let siteAdmin: Bool?
-  let name, company: String?
-  let blog: String?
-  let location, email: String?
-  let hireable: Bool?
-  let bio: String?
-  let twitterUsername: String?
-  let notificationEmail: String?
-  let publicRepos, publicGists, followers, following: Int?
-  let createdAt, updatedAt: String?
 }

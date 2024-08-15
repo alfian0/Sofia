@@ -10,7 +10,7 @@ import KeychainSwift
 import SwiftUI
 
 struct HistoryPage: View {
-  @StateObject private var viewModel = HistoryPageViewModel()
+  @ObservedObject private var viewModel = HistoryPageViewModel()
   @State private var selectedProject: ProjectModel.Datum?
 
   var body: some View {

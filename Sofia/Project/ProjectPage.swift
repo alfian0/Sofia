@@ -12,7 +12,7 @@ import SwiftUI
 
 // swiftlint:disable all
 struct ProjectPage: View {
-  @State var commits: [CommitsModel] = []
+  @State var commitsCount: Int = 0
   @State var error: Error?
   @State var isProcessing: Bool = false
   @State var durations: [DurationModel.Datum] = []
@@ -62,7 +62,7 @@ struct ProjectPage: View {
 
               let insight = generateDailyComparisonInsight(
                 codingTime: seconds.secondsToHours,
-                commits: commits.count,
+                commits: commitsCount,
                 lowThresholdCoding: lowThresholdCoding,
                 highThresholdCoding: highThresholdCoding,
                 lowThresholdCommits: lowThresholdCommits,
@@ -92,56 +92,12 @@ struct ProjectPage: View {
               )
             }
 
-            if commits.isEmpty {
-              NoDataView()
-            } else {
-              Section(header: Text("Commits (\(commits.count))")) {
-                let heartbeats = commits.reversed()
-                  .map { HeartBeatModel(
-                    epoch: $0.commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0,
-                    duration: 1
-                  ) }
-                HeartBeatView(
-                  startOfEpoch: startOfDay,
-                  heartbeats: heartbeats,
-                  tintColor: .blue
-                )
-
-                ForEach(commits) { commit in
-                  NavigationLink {
-                    CommitPage(
-                      owner: commit.author?.login ?? "",
-                      repo: project,
-                      ref: commit.sha ?? ""
-                    )
-                  } label: {
-                    HStack {
-                      VStack(alignment: .leading) {
-                        Text("Message")
-                          .font(.caption)
-                        Text(commit.commit?.message ?? "")
-                        Text(commit.commit?.committer?.date?.toDate()?.toString() ?? "")
-                          .font(.caption)
-                          .foregroundColor(Color(UIColor.systemGray))
-                      }
-
-                      Spacer()
-
-                      WebImage(url: URL(string: commit.committer?.avatarUrl ?? "")) { image in
-                        image.resizable()
-                      } placeholder: {
-                        Rectangle().foregroundColor(Color(UIColor.systemGray6))
-                      }
-                      .indicator(.activity)
-                      .transition(.fade(duration: 0.5))
-                      .scaledToFit()
-                      .clipShape(Circle())
-                      .frame(width: 40, height: 40, alignment: .center)
-                    }
-                  }
-                }
-              }
-            }
+            CommitsView(viewModel: CommitsViewModel(
+              projectName: project,
+              start: start,
+              end: end,
+              commitsCount: $commitsCount
+            ))
           }
           .listStyle(.plain)
         }
@@ -153,47 +109,7 @@ struct ProjectPage: View {
       if let token = KeychainSwift().get("githubToken"),
          !token.isEmpty {
         isProcessing = true
-        AF.request(
-          URL(string: "https://api.github.com/user")!,
-          headers: .init([.authorization(bearerToken: token)])
-        ).responseDecodable(
-          of: GithubUserModel.self,
-          decoder: decoder
-        ) { response in
-          switch response.result {
-          case let .success(data):
-            guard let user = data.login,
-                  let cleanPath = project.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed),
-                  let url = URL(string: "https://api.github.com/repos/\(user)/\(cleanPath)/commits")
-            else {
-              isProcessing = false
-              error = NSError(domain: "Sofia", code: 404)
-              return
-            }
-            AF.request(
-              url,
-              parameters: [
-                "since": start,
-                "until": end
-              ],
-              headers: .init([.authorization(bearerToken: token)])
-            ).responseDecodable(
-              of: [CommitsModel].self,
-              decoder: decoder
-            ) { response in
-              isProcessing = false
-              switch response.result {
-              case let .success(data):
-                self.commits = data
-              case .failure:
-                self.commits = []
-              }
-            }
-          case let .failure(error):
-            isProcessing = false
-            self.error = error
-          }
-        }
+
         if let token = KeychainSwift().get("stringToken"),
            let date = start.toDate()?.toString(with: "YYYY-MM-dd"),
            let url = URL(string: "https://wakatime.com/api/v1/users/current/durations"),
@@ -210,11 +126,11 @@ struct ProjectPage: View {
             of: DurationModel.self,
             decoder: decoder
           ) { response in
+            isProcessing = false
             switch response.result {
             case let .success(data):
               self.durations = data.data ?? []
             case .failure:
-              isProcessing = false
               self.durations = []
             }
           }
