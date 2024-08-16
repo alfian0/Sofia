@@ -9,15 +9,7 @@ import Foundation
 
 // MARK: - CommitModelElement
 
-struct CommitsModel: Codable, Identifiable, Hashable {
-  func hash(into hasher: inout Hasher) {
-    hasher.combine(sha)
-  }
-
-  static func == (lhs: CommitsModel, rhs: CommitsModel) -> Bool {
-    return lhs.sha == rhs.sha
-  }
-
+struct CommitsModel: Codable, Identifiable {
   var id: String {
     return UUID().uuidString
   }

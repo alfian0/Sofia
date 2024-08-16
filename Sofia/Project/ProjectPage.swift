@@ -23,7 +23,8 @@ struct ProjectPage: View {
     self.seconds = seconds
     self.start = start
     self.end = end
-    startOfDay = Calendar.current.startOfDay(for: start.toDate() ?? Date()).timeIntervalSince1970
+    startOfDay = start.toDate()?
+      .timeIntervalSince1970 ?? 0
     viewModel = ProjectsPageViewModel(projectName: project, start: start, end: end)
   }
 
@@ -35,17 +36,11 @@ struct ProjectPage: View {
       case .processing:
         ProgressView()
       case let .success(data):
-        let durations = data
+        let (durations, commits) = data
+        let heartbeats = durations.map { HeartBeatModel(epoch: $0.timestamp, duration: $0.duration) }
+        let heartbeats2 = commits.map { HeartBeatModel(epoch: $0.timestamp, duration: 1) }
+
         List {
-          Section {
-            let insight = viewModel.generateDailyComparisonInsight(
-              codingTime: seconds.secondsToHours,
-              commits: viewModel.count
-            )
-
-            Text(insight).font(.title)
-          }
-
           Section(
             header: HStack {
               Text("❤️")
@@ -56,7 +51,6 @@ struct ProjectPage: View {
               .font(.caption)
               .foregroundColor(Color(UIColor.systemGray))
           ) {
-            let heartbeats = durations.map { HeartBeatModel(epoch: $0.time ?? 0, duration: $0.duration ?? 0) }
             HeartBeatView(
               startOfEpoch: startOfDay,
               heartbeats: heartbeats,
@@ -64,7 +58,49 @@ struct ProjectPage: View {
             )
           }
 
-          CommitsView(viewModel: viewModel.viewModel)
+          Section(header: Text("Commits (\(commits.count))")) {
+            HeartBeatView(
+              startOfEpoch: startOfDay,
+              heartbeats: heartbeats2,
+              tintColor: .blue
+            )
+
+            ForEach(commits, id: \.timestamp) { commit in
+              NavigationLink {
+//                CommitPage(
+//                  owner: commit.author?.login ?? "",
+//                  repo: viewModel.getProjectName(),
+//                  ref: commit.sha ?? ""
+//                )
+              } label: {
+                HStack {
+                  VStack(alignment: .leading, spacing: 8) {
+                    Text(
+                      "Message (\(commit.duration.secondsToMinutes)/\(commit.totalDuration.secondsToMinutes) minutes)"
+                    )
+                    .font(.caption)
+                    Text(commit.message)
+                    Text(Date(timeIntervalSince1970: commit.timestamp).toString())
+                      .font(.caption)
+                      .foregroundColor(Color(UIColor.systemGray))
+                  }
+
+                  Spacer()
+
+                  WebImage(url: URL(string: commit.avatarURL)) { image in
+                    image.resizable()
+                  } placeholder: {
+                    Rectangle().foregroundColor(Color(UIColor.systemGray6))
+                  }
+                  .indicator(.activity)
+                  .transition(.fade(duration: 0.5))
+                  .scaledToFit()
+                  .clipShape(Circle())
+                  .frame(width: 40, height: 40, alignment: .center)
+                }
+              }
+            }
+          }
         }
         .listStyle(.plain)
         .navigationTitle(project)
