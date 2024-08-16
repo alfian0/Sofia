@@ -75,14 +75,29 @@ struct ProjectPage: View {
               } label: {
                 HStack {
                   VStack(alignment: .leading, spacing: 8) {
-                    Text(
-                      "Message (\(commit.duration.secondsToMinutes)/\(commit.totalDuration.secondsToMinutes) minutes)"
-                    )
-                    .font(.caption)
+                    HStack {
+                      Text("Message")
+                        .font(.caption)
+                      Text(Date(timeIntervalSince1970: commit.timestamp).toString(with: "dd-mm-yyyy"))
+                        .font(.caption)
+                        .foregroundColor(Color(UIColor.systemGray))
+                    }
                     Text(commit.message)
-                    Text(Date(timeIntervalSince1970: commit.timestamp).toString())
+                    HStack {
+                      ProgressView(value: commit.duration.secondsToMinutes / commit.totalDuration.secondsToMinutes)
+                      Text(
+                        "\(String(format: "%.2f", commit.duration.secondsToHours))/\(String(format: "%.2f", commit.totalDuration.secondsToHours))"
+                      )
                       .font(.caption)
-                      .foregroundColor(Color(UIColor.systemGray))
+                    }
+                    HStack {
+                      Text(Date(timeIntervalSince1970: commit.sessionStarted).toString(with: "HH:mm:ss"))
+                        .font(.caption)
+                      Text("-")
+                        .font(.caption)
+                      Text(Date(timeIntervalSince1970: commit.timestamp).toString(with: "HH:mm:ss"))
+                        .font(.caption)
+                    }
                   }
 
                   Spacer()

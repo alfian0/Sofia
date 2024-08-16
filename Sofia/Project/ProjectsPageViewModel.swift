@@ -16,6 +16,7 @@ struct DurationM {
 }
 
 struct CommitM {
+  let sessionStarted: Double
   let timestamp: Double
   let duration: Double
   let totalDuration: Double
@@ -105,7 +106,7 @@ class ProjectsPageViewModel: ObservableObject {
           if model.offset == 0 {
             start = durations.first?.timestamp ?? 0
           } else {
-            start = value.1[model.offset].commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0
+            start = value.1.reversed()[model.offset - 1].commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0
           }
 
           let codingTime = durations.filter { model in
@@ -117,6 +118,7 @@ class ProjectsPageViewModel: ObservableObject {
           let totalTime = end - start
 
           return CommitM(
+            sessionStarted: start,
             timestamp: timestamp,
             duration: codingTime > totalTime ? totalTime : codingTime,
             totalDuration: totalTime,
@@ -125,8 +127,7 @@ class ProjectsPageViewModel: ObservableObject {
           )
         }
 
-        self.state = .success((durations, commits))
-        print(commits)
+        self.state = .success((durations, commits.reversed()))
       }
       .store(in: &cancellable)
   }
