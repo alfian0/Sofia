@@ -11,21 +11,17 @@ import SwiftUI
 
 @MainActor
 class CommitsViewModel: ObservableObject {
-  @Published var state: CommitsViewState = .idle {
-    didSet {
-      switch state {
-      case let .success(data):
-        commitsCount = data.count
-      default: return
-      }
-    }
-  }
-
-  @Binding var commitsCount: Int
-
+  @Published var state: CommitsViewState = .idle
   private let projectName: String
   private let start: String
   private let end: String
+  var completionHandler: ((Int) -> Void)?
+
+  init(projectName: String, start: String, end: String) {
+    self.projectName = projectName
+    self.start = start
+    self.end = end
+  }
 
   enum CommitsViewState: Hashable {
     case processing
@@ -70,13 +66,6 @@ class CommitsViewModel: ObservableObject {
     return decoder
   }()
 
-  init(projectName: String, start: String, end: String, commitsCount: Binding<Int>) {
-    self.projectName = projectName
-    self.start = start
-    self.end = end
-    _commitsCount = commitsCount
-  }
-
   func onAppear() {
     onRefresh()
   }
@@ -118,6 +107,7 @@ class CommitsViewModel: ObservableObject {
             switch response.result {
             case let .success(data):
               self.state = .success(data)
+              self.completionHandler?(data.count)
             case let .failure(error):
               self.state = .failure(error)
             }

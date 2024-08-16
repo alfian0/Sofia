@@ -12,9 +12,12 @@ import KeychainSwift
 @MainActor
 class ProjectsPageViewModel: ObservableObject {
   @Published var state: ProjectsPageState = .idle
+  @Published var count: Int = 0
+  let viewModel: CommitsViewModel
 
   private let projectName: String
   private let start: String
+  private let end: String
 
   enum ProjectsPageState {
     case processing
@@ -29,9 +32,15 @@ class ProjectsPageViewModel: ObservableObject {
     return decoder
   }()
 
-  init(projectName: String, start: String) {
+  init(projectName: String, start: String, end: String) {
     self.projectName = projectName
     self.start = start
+    self.end = end
+    viewModel = CommitsViewModel(projectName: projectName, start: start, end: end)
+    viewModel.completionHandler = { [weak self] count in
+      guard let self = self else { return }
+      self.count = count
+    }
   }
 
   func onAppear() {

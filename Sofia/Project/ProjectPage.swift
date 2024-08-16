@@ -12,7 +12,6 @@ import SwiftUI
 
 struct ProjectPage: View {
   @ObservedObject private var viewModel: ProjectsPageViewModel
-  @State var commitsCount: Int = 0
   private let project: String
   private let seconds: Double
   private let start: String
@@ -25,7 +24,7 @@ struct ProjectPage: View {
     self.start = start
     self.end = end
     startOfDay = Calendar.current.startOfDay(for: start.toDate() ?? Date()).timeIntervalSince1970
-    viewModel = ProjectsPageViewModel(projectName: project, start: start)
+    viewModel = ProjectsPageViewModel(projectName: project, start: start, end: end)
   }
 
   var body: some View {
@@ -41,7 +40,7 @@ struct ProjectPage: View {
           Section {
             let insight = viewModel.generateDailyComparisonInsight(
               codingTime: seconds.secondsToHours,
-              commits: commitsCount
+              commits: viewModel.count
             )
 
             Text(insight).font(.title)
@@ -65,12 +64,7 @@ struct ProjectPage: View {
             )
           }
 
-          CommitsView(viewModel: CommitsViewModel(
-            projectName: project,
-            start: start,
-            end: end,
-            commitsCount: $commitsCount
-          ))
+          CommitsView(viewModel: viewModel.viewModel)
         }
         .listStyle(.plain)
         .navigationTitle(project)
