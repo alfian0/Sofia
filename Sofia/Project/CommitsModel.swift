@@ -18,7 +18,10 @@ struct CommitsModel: Codable, Identifiable, Hashable {
     return lhs.sha == rhs.sha
   }
 
-  var id = UUID().uuidString
+  var id: String {
+    return UUID().uuidString
+  }
+
   let sha, nodeID: String?
   let commit: Commit?
   let url, htmlUrl, commentsUrl: String?
