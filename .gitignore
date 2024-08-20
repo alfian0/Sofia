@@ -138,3 +138,5 @@ Dependencies/
 
 *.xcconfig
 *.xcodeproj
+
+**/.DS_Store
