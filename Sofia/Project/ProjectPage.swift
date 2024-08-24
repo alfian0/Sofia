@@ -33,8 +33,10 @@ struct ProjectPage: View {
       switch viewModel.state {
       case .idle:
         Text("Idle").font(.title)
+
       case .processing:
         ProgressView()
+
       case let .success(data):
         let (durations, commits) = data
         let heartbeats = durations.map { HeartBeatModel(epoch: $0.timestamp, duration: $0.duration) }
@@ -67,11 +69,12 @@ struct ProjectPage: View {
 
             ForEach(commits, id: \.timestamp) { commit in
               NavigationLink {
-//                CommitPage(
-//                  owner: commit.author?.login ?? "",
-//                  repo: viewModel.getProjectName(),
-//                  ref: commit.sha ?? ""
-//                )
+                let viewModel = CommitPageViewModel(
+                  owner: "",
+                  repo: project,
+                  ref: ""
+                )
+                CommitPage(viewModel: viewModel)
               } label: {
                 HStack {
                   VStack(alignment: .leading, spacing: 8) {
@@ -120,6 +123,7 @@ struct ProjectPage: View {
         .listStyle(.plain)
         .navigationTitle(project)
         .navigationBarTitleDisplayMode(.inline)
+
       case let .failure(error):
         VStack {
           Text("👻")

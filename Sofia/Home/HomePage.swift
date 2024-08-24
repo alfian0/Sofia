@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct HomePage: View {
-  @StateObject private var viewModel = HomePageViewModel()
+  @ObservedObject private var viewModel = HomePageViewModel()
   @State private var selectedProject: StatusBarModel.Category?
 
   var body: some View {
