@@ -72,17 +72,18 @@ struct HistoryPage: View {
       .fullScreenCover(item: $selectedProject, content: { project in
         NavigationView {
           let createdAt = project.createdAt?.toDate()?.toString(with: "YYYY-MM-dd")
-          SummariesPage(
-            start: project.firstHeartbeatAt?.toDate()?.toString(with: "YYYY-MM-dd") ?? createdAt ?? "",
-            end: project.lastHeartbeatAt?.toDate()?.toString(with: "YYYY-MM-dd") ?? Date()
-              .toString(with: "YYYY-MM-dd"),
-            project: project.name ?? ""
-          )
-          .navigationBarItems(leading: Button(action: {
-            selectedProject = nil
-          }, label: {
-            Image(systemName: "chevron.left")
-          }))
+          SummariesPage(viewModel:
+            SummariesPageViewModel(
+              start: project.firstHeartbeatAt?.toDate()?.toString(with: "YYYY-MM-dd") ?? createdAt ?? "",
+              end: project.lastHeartbeatAt?.toDate()?.toString(with: "YYYY-MM-dd") ?? Date()
+                .toString(with: "YYYY-MM-dd"),
+              project: project.name ?? ""
+            ))
+            .navigationBarItems(leading: Button(action: {
+              selectedProject = nil
+            }, label: {
+              Image(systemName: "chevron.left")
+            }))
         }
       })
       .onAppear {
