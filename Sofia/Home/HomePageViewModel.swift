@@ -41,21 +41,9 @@ class HomePageViewModel: ObservableObject {
   }
 
   func onRefresh() {
-    struct StatusBarRequest: Request {
-      var path: String = "/api/v1/users/current/status_bar/today"
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-
     state = .processing
 
-    WakaAuthenticatedClient()?.publisher(StatusBarModel.self, request: StatusBarRequest())
+    WakatimeAuthenticatedService.shared.getStatusBar()?
       .sink(result: { [weak self] result in
         guard let self = self else { return }
         switch result {

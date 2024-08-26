@@ -78,7 +78,7 @@ class ProjectsPageViewModel: ObservableObject {
       return
     }
 
-    guard let duration = getDuration(token: wakatiemToken, date: date, name: projectName) else {
+    guard let duration = WakatimeAuthenticatedService.shared.getDuration(date: date, name: projectName) else {
       return
     }
 
@@ -125,26 +125,6 @@ class ProjectsPageViewModel: ObservableObject {
         }
       })
       .store(in: &cancellables)
-  }
-
-  func getDuration(token _: String, date: String, name: String) -> AnyPublisher<DurationModel, Error>? {
-    struct DurationRequest: Request {
-      var path: String = "/api/v1/users/current/durations"
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-
-    return WakaAuthenticatedClient()?.publisher(DurationModel.self, request: DurationRequest(queryParams: [
-      "date": date,
-      "project": name,
-      "timeout": 15
-    ]))
   }
 
   func getGithubUser(token _: String) -> AnyPublisher<GithubUserModel, Error>? {

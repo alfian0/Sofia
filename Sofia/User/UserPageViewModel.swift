@@ -25,21 +25,9 @@ class UserPageViewModel: ObservableObject {
   )
 
   func loadUser() {
-    struct UserRequest: Request {
-      var path: String = "/api/v1/users/current"
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-
     state = .processing
 
-    WakaAuthenticatedClient()?.publisher(UserModel.self, request: UserRequest())
+    WakatimeAuthenticatedService.shared.getUser()?
       .sink(result: { [weak self] result in
         guard let self = self else { return }
 
