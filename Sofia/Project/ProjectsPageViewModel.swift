@@ -32,6 +32,7 @@ class ProjectsPageViewModel: ObservableObject {
   private let projectName: String
   private let start: String
   private let end: String
+  private let usecase: ProjectPageUseCase = .init()
 
   init(projectName: String, start: String, end: String) {
     self.projectName = projectName
@@ -44,75 +45,14 @@ class ProjectsPageViewModel: ObservableObject {
   }
 
   func onRefresh() {
-    guard let githubUser = GithubAuthenticatedService.shared.getUser() else {
-      return
-    }
-
-    let commits = githubUser
-      .flatMap { [weak self] user in
-        guard let self = self,
-              let commits = GithubAuthenticatedService.shared.getCommits(
-                user: user.login ?? "",
-                project: self.projectName,
-                start: self.start,
-                end: self.end
-              ) else {
-          return Fail<[CommitsModel], Error>(error: NSError(domain: "Sofia", code: 404))
-            .eraseToAnyPublisher()
-        }
-
-        return commits
-      }
-
-    guard let wakatiemToken = KeychainSwift().get("stringToken"),
-          !wakatiemToken.isEmpty else {
-      return
-    }
-
-    guard let date = start.toDate()?.toString(with: "YYYY-MM-dd") else {
-      return
-    }
-
-    guard let duration = WakatimeAuthenticatedService.shared.getDuration(date: date, name: projectName) else {
-      return
-    }
-
-    Publishers.CombineLatest(duration, commits)
+    usecase.getData(project: projectName, start: start, end: end)
       .sink(result: { [weak self] result in
         guard let self = self else { return }
         switch result {
         case let .success(value):
           let durations = value.0.data?.map { DurationM(timestamp: $0.time ?? 0, duration: $0.duration ?? 0) } ?? []
 
-          let commits = value.1.reversed().enumerated().map { model in
-            let timestamp = model.element.commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0
-            var start = Date().timeIntervalSince1970
-            let end = timestamp
-
-            if model.offset == 0 {
-              start = durations.first?.timestamp ?? 0
-            } else {
-              start = value.1.reversed()[model.offset - 1].commit?.committer?.date?.toDate()?
-                .timeIntervalSince1970 ?? 0
-            }
-
-            let codingTime = durations.filter { model in
-              model.timestamp > start && model.timestamp < end
-            }.reduce(0) { result, data in
-              result + data.duration
-            }
-
-            let totalTime = end - start
-
-            return CommitM(
-              sessionStarted: start,
-              timestamp: timestamp,
-              duration: codingTime > totalTime ? totalTime : codingTime,
-              totalDuration: totalTime,
-              message: model.element.commit?.message ?? "",
-              avatarURL: model.element.committer?.avatarUrl ?? ""
-            )
-          }
+          let commits = buildCommits(raw: value.1, durations: durations)
 
           self.state = .success((durations, commits.reversed()))
         case let .failure(error):
@@ -120,6 +60,38 @@ class ProjectsPageViewModel: ObservableObject {
         }
       })
       .store(in: &cancellables)
+  }
+
+  func buildCommits(raw commits: [CommitsModel], durations: [DurationM]) -> [CommitM] {
+    commits.reversed().enumerated().map { model in
+      let timestamp = model.element.commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0
+      var start = Date().timeIntervalSince1970
+      let end = timestamp
+
+      if model.offset == 0 {
+        start = durations.first?.timestamp ?? 0
+      } else {
+        start = commits.reversed()[model.offset - 1].commit?.committer?.date?.toDate()?
+          .timeIntervalSince1970 ?? 0
+      }
+
+      let codingTime = durations.filter { model in
+        model.timestamp > start && model.timestamp < end
+      }.reduce(0) { result, data in
+        result + data.duration
+      }
+
+      let totalTime = end - start
+
+      return CommitM(
+        sessionStarted: start,
+        timestamp: timestamp,
+        duration: codingTime > totalTime ? totalTime : codingTime,
+        totalDuration: totalTime,
+        message: model.element.commit?.message ?? "",
+        avatarURL: model.element.committer?.avatarUrl ?? ""
+      )
+    }
   }
 
 //  // Enum to represent ranges
