@@ -21,58 +21,22 @@ final class GithubAuthenticatedService {
   }
 
   func getUser() -> AnyPublisher<GithubUserModel, Error>? {
-    struct UserRequest: Request {
-      var path: String = "/user"
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-
-    return client?.publisher(GithubUserModel.self, request: UserRequest())
+    return client?.publisher(GithubUserModel.self, request: RequestImpl(path: "/user", method: .get))
   }
 
   func getCommit(owner: String, repo: String, ref: String) -> AnyPublisher<CommitModel, Error>? {
-    struct CommitRequest: Request {
-      var path: String
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-
     return client?.publisher(
       CommitModel.self,
-      request: CommitRequest(path: "/repos/\(owner)/\(repo)/commits/\(ref)")
+      request: RequestImpl(path: "/repos/\(owner)/\(repo)/commits/\(ref)", method: .get)
     )
   }
 
   func getCommits(user: String, project: String, start: String, end: String) -> AnyPublisher<[CommitsModel], Error>? {
-    struct DurationRequest: Request {
-      var path: String
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-
     let project = project.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!
 
-    return GithubAuthenticatedClient()?.publisher(
+    return client?.publisher(
       [CommitsModel].self,
-      request: DurationRequest(path: "/repos/\(user)/\(project)/commits", queryParams: [
+      request: RequestImpl(path: "/repos/\(user)/\(project)/commits", method: .get, queryParams: [
         "since": start,
         "until": end
       ])

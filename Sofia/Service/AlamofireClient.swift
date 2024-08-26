@@ -151,3 +151,15 @@ final class GithubAuthenticatedClient: HttpClient {
     return client.publisher(type, request: request, decoder: decoder)
   }
 }
+
+struct RequestImpl: Request {
+  var path: String
+
+  var method: Alamofire.HTTPMethod
+
+  var body: [String: Any]?
+
+  var queryParams: [String: Any]?
+
+  var headers: [String: String]?
+}

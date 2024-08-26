@@ -21,106 +21,49 @@ final class WakatimeAuthenticatedService {
   }
 
   func getSummaries(start: String, end: String, project: String) -> AnyPublisher<SummariesModel, Error>? {
-    struct SummariesRequest: Request {
-      var path: String = "/api/v1/users/current/summaries"
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-
-    return client?.publisher(SummariesModel.self, request: SummariesRequest(queryParams: [
-      "start": start,
-      "end": end,
-      "project": project
-    ]))
+    return client?.publisher(
+      SummariesModel.self,
+      request: RequestImpl(path: "/api/v1/users/current/summaries", method: .get, queryParams: [
+        "start": start,
+        "end": end,
+        "project": project
+      ])
+    )
   }
 
   func getAllTime() -> AnyPublisher<AllTimeModel, Error>? {
-    struct AllTimeRequest: Request {
-      var path: String = "/api/v1/users/current/all_time_since_today"
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-
-    return client?.publisher(AllTimeModel.self, request: AllTimeRequest())
+    return client?.publisher(
+      AllTimeModel.self,
+      request: RequestImpl(path: "/api/v1/users/current/all_time_since_today", method: .get)
+    )
   }
 
   func getStatusBar() -> AnyPublisher<StatusBarModel, Error>? {
-    struct StatusBarRequest: Request {
-      var path: String = "/api/v1/users/current/status_bar/today"
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-
-    return client?.publisher(StatusBarModel.self, request: StatusBarRequest())
+    return client?.publisher(
+      StatusBarModel.self,
+      request: RequestImpl(path: "/api/v1/users/current/status_bar/today", method: .get)
+    )
   }
 
   func getLog() -> AnyPublisher<LogModel, Error>? {
-    struct LogRequest: Request {
-      var path: String = "/api/v1/users/current/user_agents"
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-
-    return client?.publisher(LogModel.self, request: LogRequest())
+    return client?.publisher(
+      LogModel.self,
+      request: RequestImpl(path: "/api/v1/users/current/user_agents", method: .get)
+    )
   }
 
   func getDuration(date: String, name: String) -> AnyPublisher<DurationModel, Error>? {
-    struct DurationRequest: Request {
-      var path: String = "/api/v1/users/current/durations"
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-
-    return client?.publisher(DurationModel.self, request: DurationRequest(queryParams: [
-      "date": date,
-      "project": name,
-      "timeout": 15
-    ]))
+    return client?.publisher(
+      DurationModel.self,
+      request: RequestImpl(path: "/api/v1/users/current/durations", method: .get, queryParams: [
+        "date": date,
+        "project": name,
+        "timeout": 15
+      ])
+    )
   }
 
   func getUser() -> AnyPublisher<UserModel, Error>? {
-    struct UserRequest: Request {
-      var path: String = "/api/v1/users/current"
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-
-    return client?.publisher(UserModel.self, request: UserRequest())
+    return client?.publisher(UserModel.self, request: RequestImpl(path: "/api/v1/users/current", method: .get))
   }
 }
