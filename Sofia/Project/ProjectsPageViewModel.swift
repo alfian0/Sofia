@@ -44,24 +44,19 @@ class ProjectsPageViewModel: ObservableObject {
   }
 
   func onRefresh() {
-    guard let githubToken = KeychainSwift().get("githubToken"),
-          !githubToken.isEmpty else {
-      return
-    }
-
-    guard let githubUser = getGithubUser(token: githubToken) else {
+    guard let githubUser = GithubAuthenticatedService.shared.getUser() else {
       return
     }
 
     let commits = githubUser
-      .flatMap { user in
-        guard let commits = self.getGithubCommits(
-          token: githubToken,
-          user: user.login ?? "",
-          project: self.projectName,
-          start: self.start,
-          end: self.end
-        ) else {
+      .flatMap { [weak self] user in
+        guard let self = self,
+              let commits = GithubAuthenticatedService.shared.getCommits(
+                user: user.login ?? "",
+                project: self.projectName,
+                start: self.start,
+                end: self.end
+              ) else {
           return Fail<[CommitsModel], Error>(error: NSError(domain: "Sofia", code: 404))
             .eraseToAnyPublisher()
         }
@@ -125,45 +120,6 @@ class ProjectsPageViewModel: ObservableObject {
         }
       })
       .store(in: &cancellables)
-  }
-
-  func getGithubUser(token _: String) -> AnyPublisher<GithubUserModel, Error>? {
-    struct UserRequest: Request {
-      var path: String = "/user"
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-
-    return GithubAuthenticatedClient()?.publisher(GithubUserModel.self, request: UserRequest())
-  }
-
-  func getGithubCommits(token _: String, user: String, project: String, start: String,
-                        end: String) -> AnyPublisher<[CommitsModel], Error>? {
-    struct DurationRequest: Request {
-      var path: String
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-    let project = project.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!
-    return GithubAuthenticatedClient()?.publisher(
-      [CommitsModel].self,
-      request: DurationRequest(path: "/repos/\(user)/\(project)/commits", queryParams: [
-        "since": start,
-        "until": end
-      ])
-    )
   }
 
 //  // Enum to represent ranges

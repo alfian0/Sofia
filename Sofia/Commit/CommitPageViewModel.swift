@@ -30,35 +30,19 @@ class CommitPageViewModel: ObservableObject {
   }
 
   func onRefresh() {
-    struct CommitRequest: Request {
-      var path: String
-
-      var method: Alamofire.HTTPMethod = .get
-
-      var body: [String: Any]?
-
-      var queryParams: [String: Any]?
-
-      var headers: [String: String]?
-    }
-
     state = .processing
+    GithubAuthenticatedService.shared.getCommit(owner: owner, repo: repo, ref: ref)?
+      .sink(result: { [weak self] result in
+        guard let self = self else { return }
 
-    GithubAuthenticatedClient()?.publisher(
-      CommitModel.self,
-      request: CommitRequest(path: "/repos/\(owner)/\(repo)/commits/\(ref)")
-    )
-    .sink(result: { [weak self] result in
-      guard let self = self else { return }
-
-      switch result {
-      case let .success(data):
-        self.state = .success(data)
-      case let .failure(error):
-        self.state = .failure(error)
-      }
-    })
-    .store(in: &cancellables)
+        switch result {
+        case let .success(data):
+          self.state = .success(data)
+        case let .failure(error):
+          self.state = .failure(error)
+        }
+      })
+      .store(in: &cancellables)
   }
 
   func getTitle() -> String {
