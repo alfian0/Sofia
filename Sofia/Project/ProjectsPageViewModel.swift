@@ -26,25 +26,12 @@ struct CommitM {
 
 @MainActor
 class ProjectsPageViewModel: ObservableObject {
-  @Published var state: ProjectsPageState = .idle
+  @Published var state: ViewState<([DurationM], [CommitM])> = .idle
+  private var cancellables: Set<AnyCancellable> = []
 
   private let projectName: String
   private let start: String
   private let end: String
-  private var cancellable: Set<AnyCancellable> = []
-
-  enum ProjectsPageState {
-    case processing
-    case success(([DurationM], [CommitM]))
-    case failure(Error)
-    case idle
-  }
-
-  private let decoder: JSONDecoder = {
-    let decoder = JSONDecoder()
-    decoder.keyDecodingStrategy = .convertFromSnakeCase
-    return decoder
-  }()
 
   init(projectName: String, start: String, end: String) {
     self.projectName = projectName
@@ -62,15 +49,24 @@ class ProjectsPageViewModel: ObservableObject {
       return
     }
 
-    let commits = getGithubUser(token: githubToken)
+    guard let githubUser = getGithubUser(token: githubToken) else {
+      return
+    }
+
+    let commits = githubUser
       .flatMap { user in
-        self.getGithubCommits(
+        guard let commits = self.getGithubCommits(
           token: githubToken,
           user: user.login ?? "",
           project: self.projectName,
           start: self.start,
           end: self.end
-        )
+        ) else {
+          return Fail<[CommitsModel], Error>(error: NSError(domain: "Sofia", code: 404))
+            .eraseToAnyPublisher()
+        }
+
+        return commits
       }
 
     guard let wakatiemToken = KeychainSwift().get("stringToken"),
@@ -82,106 +78,112 @@ class ProjectsPageViewModel: ObservableObject {
       return
     }
 
-    let duration = getDuration(token: wakatiemToken, date: date, name: projectName)
+    guard let duration = getDuration(token: wakatiemToken, date: date, name: projectName) else {
+      return
+    }
 
     Publishers.CombineLatest(duration, commits)
-      .sink { [weak self] completion in
+      .sink(result: { [weak self] result in
         guard let self = self else { return }
-        switch completion {
+        switch result {
+        case let .success(value):
+          let durations = value.0.data?.map { DurationM(timestamp: $0.time ?? 0, duration: $0.duration ?? 0) } ?? []
+
+          let commits = value.1.reversed().enumerated().map { model in
+            let timestamp = model.element.commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0
+            var start = Date().timeIntervalSince1970
+            let end = timestamp
+
+            if model.offset == 0 {
+              start = durations.first?.timestamp ?? 0
+            } else {
+              start = value.1.reversed()[model.offset - 1].commit?.committer?.date?.toDate()?
+                .timeIntervalSince1970 ?? 0
+            }
+
+            let codingTime = durations.filter { model in
+              model.timestamp > start && model.timestamp < end
+            }.reduce(0) { result, data in
+              result + data.duration
+            }
+
+            let totalTime = end - start
+
+            return CommitM(
+              sessionStarted: start,
+              timestamp: timestamp,
+              duration: codingTime > totalTime ? totalTime : codingTime,
+              totalDuration: totalTime,
+              message: model.element.commit?.message ?? "",
+              avatarURL: model.element.committer?.avatarUrl ?? ""
+            )
+          }
+
+          self.state = .success((durations, commits.reversed()))
         case let .failure(error):
           self.state = .failure(error)
-        case .finished:
-          break
         }
-      } receiveValue: { [weak self] value in
-        guard let self = self else { return }
-
-        let durations = value.0.data?.map { DurationM(timestamp: $0.time ?? 0, duration: $0.duration ?? 0) } ?? []
-
-        let commits = value.1.reversed().enumerated().map { model in
-          let timestamp = model.element.commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0
-          var start = Date().timeIntervalSince1970
-          let end = timestamp
-
-          if model.offset == 0 {
-            start = durations.first?.timestamp ?? 0
-          } else {
-            start = value.1.reversed()[model.offset - 1].commit?.committer?.date?.toDate()?.timeIntervalSince1970 ?? 0
-          }
-
-          let codingTime = durations.filter { model in
-            model.timestamp > start && model.timestamp < end
-          }.reduce(0) { result, data in
-            result + data.duration
-          }
-
-          let totalTime = end - start
-
-          return CommitM(
-            sessionStarted: start,
-            timestamp: timestamp,
-            duration: codingTime > totalTime ? totalTime : codingTime,
-            totalDuration: totalTime,
-            message: model.element.commit?.message ?? "",
-            avatarURL: model.element.committer?.avatarUrl ?? ""
-          )
-        }
-
-        self.state = .success((durations, commits.reversed()))
-      }
-      .store(in: &cancellable)
+      })
+      .store(in: &cancellables)
   }
 
-  func getDuration(token: String, date: String, name: String) -> AnyPublisher<DurationModel, AFError> {
-    let url = URL(string: "https://wakatime.com/api/v1/users/current/durations")!
-    return AF.request(
-      url,
-      parameters: [
-        "date": date,
-        "project": name,
-        "timeout": 15
-      ],
-      headers: .init([.authorization(bearerToken: token)])
-    )
-    .validate()
-    .publishDecodable(type: DurationModel.self, decoder: decoder)
-    .value()
-    .receive(on: DispatchQueue.main)
-    .eraseToAnyPublisher()
+  func getDuration(token _: String, date: String, name: String) -> AnyPublisher<DurationModel, Error>? {
+    struct DurationRequest: Request {
+      var path: String = "/api/v1/users/current/durations"
+
+      var method: Alamofire.HTTPMethod = .get
+
+      var body: [String: Any]?
+
+      var queryParams: [String: Any]?
+
+      var headers: [String: String]?
+    }
+
+    return WakaAuthenticatedClient()?.publisher(DurationModel.self, request: DurationRequest(queryParams: [
+      "date": date,
+      "project": name,
+      "timeout": 15
+    ]))
   }
 
-  func getGithubUser(token: String) -> AnyPublisher<GithubUserModel, AFError> {
-    let url = URL(string: "https://api.github.com/user")!
+  func getGithubUser(token _: String) -> AnyPublisher<GithubUserModel, Error>? {
+    struct UserRequest: Request {
+      var path: String = "/user"
 
-    return AF.request(
-      url,
-      headers: .init([.authorization(bearerToken: token)])
-    )
-    .validate()
-    .publishDecodable(type: GithubUserModel.self, decoder: decoder)
-    .value()
-    .receive(on: DispatchQueue.main)
-    .eraseToAnyPublisher()
+      var method: Alamofire.HTTPMethod = .get
+
+      var body: [String: Any]?
+
+      var queryParams: [String: Any]?
+
+      var headers: [String: String]?
+    }
+
+    return GithubAuthenticatedClient()?.publisher(GithubUserModel.self, request: UserRequest())
   }
 
-  func getGithubCommits(token: String, user: String, project: String, start: String,
-                        end: String) -> AnyPublisher<[CommitsModel], AFError> {
+  func getGithubCommits(token _: String, user: String, project: String, start: String,
+                        end: String) -> AnyPublisher<[CommitsModel], Error>? {
+    struct DurationRequest: Request {
+      var path: String
+
+      var method: Alamofire.HTTPMethod = .get
+
+      var body: [String: Any]?
+
+      var queryParams: [String: Any]?
+
+      var headers: [String: String]?
+    }
     let project = project.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)!
-    let url = URL(string: "https://api.github.com/repos/\(user)/\(project)/commits")!
-
-    return AF.request(
-      url,
-      parameters: [
+    return GithubAuthenticatedClient()?.publisher(
+      [CommitsModel].self,
+      request: DurationRequest(path: "/repos/\(user)/\(project)/commits", queryParams: [
         "since": start,
         "until": end
-      ],
-      headers: .init([.authorization(bearerToken: token)])
+      ])
     )
-    .validate()
-    .publishDecodable(type: [CommitsModel].self, decoder: decoder)
-    .value()
-    .receive(on: DispatchQueue.main)
-    .eraseToAnyPublisher()
   }
 
 //  // Enum to represent ranges

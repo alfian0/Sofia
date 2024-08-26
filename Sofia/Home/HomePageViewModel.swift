@@ -6,19 +6,14 @@
 //
 
 import Alamofire
+import Combine
 import Foundation
 import KeychainSwift
 
-enum HomePageState {
-  case processing
-  case success(StatusBarModel.DataClass)
-  case failure(Error)
-  case idle
-}
-
 @MainActor
 class HomePageViewModel: ObservableObject {
-  @Published var state: HomePageState = .idle
+  @Published var state: ViewState<StatusBarModel.DataClass> = .idle
+  private var cancellables: Set<AnyCancellable> = []
 
   var insight: String {
     guard case let .success(statusBar) = state
@@ -41,29 +36,29 @@ class HomePageViewModel: ObservableObject {
     return (now >= startOfWorkday && now <= endOfWorkday) ? "" : "You're outside of your typical working hours."
   }
 
-  private let decoder: JSONDecoder = {
-    let decoder = JSONDecoder()
-    decoder.keyDecodingStrategy = .convertFromSnakeCase
-    return decoder
-  }()
-
   func onAppear() {
     onRefresh()
   }
 
   func onRefresh() {
-    if let token = KeychainSwift().get("stringToken"), !token.isEmpty {
-      state = .processing
-      AF.request(
-        URL(string: "https://wakatime.com/api/v1/users/current/status_bar/today")!,
-        headers: .init([.authorization(bearerToken: token)])
-      ).responseDecodable(
-        of: StatusBarModel.self,
-        decoder: decoder
-      ) { [weak self] response in
-        guard let self = self else { return }
+    struct StatusBarRequest: Request {
+      var path: String = "/api/v1/users/current/status_bar/today"
 
-        switch response.result {
+      var method: Alamofire.HTTPMethod = .get
+
+      var body: [String: Any]?
+
+      var queryParams: [String: Any]?
+
+      var headers: [String: String]?
+    }
+
+    state = .processing
+
+    WakaAuthenticatedClient()?.publisher(StatusBarModel.self, request: StatusBarRequest())
+      .sink(result: { [weak self] result in
+        guard let self = self else { return }
+        switch result {
         case let .success(data):
           if let data = data.data {
             self.state = .success(data)
@@ -73,8 +68,8 @@ class HomePageViewModel: ObservableObject {
         case let .failure(error):
           self.state = .failure(error)
         }
-      }
-    }
+      })
+      .store(in: &cancellables)
   }
 
   func getTimeBasedInsight(codingTime: Double, startOfWorkday: Date, endOfWorkday: Date) -> String {

@@ -6,25 +6,14 @@
 //
 
 import Alamofire
+import Combine
 import Foundation
 import KeychainSwift
 
-enum SummariesPageState {
-  case processing
-  case success(SummariesModel)
-  case failure(Error)
-  case idle
-}
-
 @MainActor
 class SummariesPageViewModel: ObservableObject {
-  @Published var state: SummariesPageState = .idle
-
-  private let decoder: JSONDecoder = {
-    let decoder = JSONDecoder()
-    decoder.keyDecodingStrategy = .convertFromSnakeCase
-    return decoder
-  }()
+  @Published var state: ViewState<SummariesModel> = .idle
+  private var cancellables: Set<AnyCancellable> = []
 
   let start: String
   let end: String
@@ -41,30 +30,35 @@ class SummariesPageViewModel: ObservableObject {
   }
 
   func onRefresh() {
-    if let token = KeychainSwift().get("stringToken"),
-       !token.isEmpty {
-      state = .processing
-      AF.request(
-        URL(string: "https://wakatime.com/api/v1/users/current/summaries")!,
-        parameters: [
-          "start": start,
-          "end": end,
-          "project": project
-        ],
-        headers: .init([.authorization(bearerToken: token)])
-      ).responseDecodable(
-        of: SummariesModel.self,
-        decoder: decoder
-      ) { [weak self] response in
-        guard let self = self else { return }
+    struct SummariesRequest: Request {
+      var path: String = "/api/v1/users/current/summaries"
 
-        switch response.result {
-        case let .success(data):
-          self.state = .success(data)
-        case let .failure(error):
-          self.state = .failure(error)
-        }
-      }
+      var method: Alamofire.HTTPMethod = .get
+
+      var body: [String: Any]?
+
+      var queryParams: [String: Any]?
+
+      var headers: [String: String]?
     }
+
+    state = .processing
+
+    WakaAuthenticatedClient()?.publisher(SummariesModel.self, request: SummariesRequest(queryParams: [
+      "start": start,
+      "end": end,
+      "project": project
+    ]))
+    .sink(result: { [weak self] result in
+      guard let self = self else { return }
+
+      switch result {
+      case let .success(data):
+        self.state = .success(data)
+      case let .failure(error):
+        self.state = .failure(error)
+      }
+    })
+    .store(in: &cancellables)
   }
 }

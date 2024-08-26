@@ -6,25 +6,14 @@
 //
 
 import Alamofire
+import Combine
 import Foundation
 import KeychainSwift
 
-enum CommitPageState {
-  case processing
-  case success(CommitModel)
-  case failure(Error)
-  case idle
-}
-
 @MainActor
 class CommitPageViewModel: ObservableObject {
-  @Published var state: CommitPageState = .idle
-
-  private let decoder: JSONDecoder = {
-    let decoder = JSONDecoder()
-    decoder.keyDecodingStrategy = .convertFromSnakeCase
-    return decoder
-  }()
+  @Published var state: ViewState<CommitModel> = .idle
+  private var cancellables: Set<AnyCancellable> = []
 
   let owner: String
   let repo: String
@@ -41,26 +30,35 @@ class CommitPageViewModel: ObservableObject {
   }
 
   func onRefresh() {
-    if let token = KeychainSwift().get("githubToken"),
-       !token.isEmpty {
-      state = .processing
-      AF.request(
-        URL(string: "https://api.github.com/repos/\(owner)/\(repo)/commits/\(ref)")!,
-        headers: .init([.authorization(bearerToken: token)])
-      ).responseDecodable(
-        of: CommitModel.self,
-        decoder: decoder
-      ) { [weak self] response in
-        guard let self = self else { return }
+    struct CommitRequest: Request {
+      var path: String
 
-        switch response.result {
-        case let .success(data):
-          self.state = .success(data)
-        case let .failure(error):
-          self.state = .failure(error)
-        }
-      }
+      var method: Alamofire.HTTPMethod = .get
+
+      var body: [String: Any]?
+
+      var queryParams: [String: Any]?
+
+      var headers: [String: String]?
     }
+
+    state = .processing
+
+    GithubAuthenticatedClient()?.publisher(
+      CommitModel.self,
+      request: CommitRequest(path: "/repos/\(owner)/\(repo)/commits/\(ref)")
+    )
+    .sink(result: { [weak self] result in
+      guard let self = self else { return }
+
+      switch result {
+      case let .success(data):
+        self.state = .success(data)
+      case let .failure(error):
+        self.state = .failure(error)
+      }
+    })
+    .store(in: &cancellables)
   }
 
   func getTitle() -> String {

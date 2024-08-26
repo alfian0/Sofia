@@ -15,7 +15,7 @@ struct UserPage: View {
   var body: some View {
     NavigationView {
       VStack {
-        switch viewModel.viewState {
+        switch viewModel.state {
         case .idle:
           Text("Idle State")
         case .processing:

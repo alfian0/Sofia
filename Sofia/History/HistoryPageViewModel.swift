@@ -6,50 +6,45 @@
 //
 
 import Alamofire
+import Combine
 import Foundation
 import KeychainSwift
 
 @MainActor
 class HistoryPageViewModel: ObservableObject {
-  @Published var state: HistoryPageState = .idle
-
-  enum HistoryPageState {
-    case processing
-    case success(AllTimeModel)
-    case failure(Error)
-    case idle
-  }
-
-  private let decoder: JSONDecoder = {
-    let decoder = JSONDecoder()
-    decoder.keyDecodingStrategy = .convertFromSnakeCase
-    return decoder
-  }()
+  @Published var state: ViewState<AllTimeModel> = .idle
+  private var cancellables: Set<AnyCancellable> = []
 
   func onAppear() {
     onRefresh()
   }
 
   func onRefresh() {
-    if let token = KeychainSwift().get("stringToken"),
-       !token.isEmpty {
-      state = .processing
-      AF.request(
-        URL(string: "https://wakatime.com/api/v1/users/current/all_time_since_today")!,
-        headers: .init([.authorization(bearerToken: token)])
-      ).responseDecodable(
-        of: AllTimeModel.self,
-        decoder: decoder
-      ) { [weak self] response in
+    struct AllTimeRequest: Request {
+      var path: String = "/api/v1/users/current/all_time_since_today"
+
+      var method: Alamofire.HTTPMethod = .get
+
+      var body: [String: Any]?
+
+      var queryParams: [String: Any]?
+
+      var headers: [String: String]?
+    }
+
+    state = .processing
+
+    WakaAuthenticatedClient()?.publisher(AllTimeModel.self, request: AllTimeRequest())
+      .sink(result: { [weak self] result in
         guard let self = self else { return }
 
-        switch response.result {
+        switch result {
         case let .success(data):
           self.state = .success(data)
         case let .failure(error):
           self.state = .failure(error)
         }
-      }
-    }
+      })
+      .store(in: &cancellables)
   }
 }

@@ -6,24 +6,14 @@
 //
 
 import Alamofire
+import Combine
 import KeychainSwift
 import OAuthSwift
 import SwiftUI
 
-enum UserPageViewState {
-  case processing
-  case success(UserModel.DataClass?)
-  case failure(Error)
-  case idle
-}
-
 class UserPageViewModel: ObservableObject {
-  @Published var viewState: UserPageViewState = .idle
-  private let decoder: JSONDecoder = {
-    let decoder = JSONDecoder()
-    decoder.keyDecodingStrategy = .convertFromSnakeCase
-    return decoder
-  }()
+  @Published var state: ViewState<UserModel.DataClass?> = .idle
+  private var cancellables: Set<AnyCancellable> = []
 
   let keychain = KeychainSwift()
   private let oauthswift = OAuth2Swift(
@@ -35,27 +25,32 @@ class UserPageViewModel: ObservableObject {
   )
 
   func loadUser() {
-    guard let token = keychain.get("stringToken"), !token.isEmpty
-    else {
-      viewState = .failure(NSError(domain: "Token not found", code: -1, userInfo: nil))
-      return
+    struct UserRequest: Request {
+      var path: String = "/api/v1/users/current"
+
+      var method: Alamofire.HTTPMethod = .get
+
+      var body: [String: Any]?
+
+      var queryParams: [String: Any]?
+
+      var headers: [String: String]?
     }
 
-    viewState = .processing
-    AF.request(
-      URL(string: "https://wakatime.com/api/v1/users/current")!,
-      headers: .init([.authorization(bearerToken: token)])
-    ).responseDecodable(
-      of: UserModel.self,
-      decoder: decoder
-    ) { response in
-      switch response.result {
-      case let .success(data):
-        self.viewState = .success(data.data)
-      case let .failure(error):
-        self.viewState = .failure(error)
-      }
-    }
+    state = .processing
+
+    WakaAuthenticatedClient()?.publisher(UserModel.self, request: UserRequest())
+      .sink(result: { [weak self] result in
+        guard let self = self else { return }
+
+        switch result {
+        case let .success(data):
+          self.state = .success(data.data)
+        case let .failure(error):
+          self.state = .failure(error)
+        }
+      })
+      .store(in: &cancellables)
   }
 
   func connectGithub() {

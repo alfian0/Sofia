@@ -12,7 +12,7 @@ struct LogPage: View {
   var body: some View {
     NavigationView {
       VStack {
-        switch viewModel.viewState {
+        switch viewModel.state {
         case .idle:
           Text("Idle State")
         case .processing:
@@ -47,7 +47,7 @@ struct LogPage: View {
       .navigationBarTitle("User Agent")
     }
     .onAppear {
-      viewModel.loadLogs()
+      viewModel.onAppear()
     }
   }
 }

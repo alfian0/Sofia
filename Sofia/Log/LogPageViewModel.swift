@@ -6,45 +6,43 @@
 //
 
 import Alamofire
+import Combine
 import KeychainSwift
 import SwiftUI
 
-enum LogPageViewState {
-  case processing
-  case success([LogModel.Datum])
-  case failure(Error)
-  case idle
-}
-
 class LogPageViewModel: ObservableObject {
-  @Published var viewState: LogPageViewState = .idle
-  private let decoder: JSONDecoder = {
-    let decoder = JSONDecoder()
-    decoder.keyDecodingStrategy = .convertFromSnakeCase
-    return decoder
-  }()
+  @Published var state: ViewState<[LogModel.Datum]> = .idle
+  private var cancellables: Set<AnyCancellable> = []
 
-  func loadLogs() {
-    guard let token = KeychainSwift().get("stringToken"), !token.isEmpty
-    else {
-      viewState = .failure(NSError(domain: "Token not found", code: -1, userInfo: nil))
-      return
+  func onAppear() {
+    onRefresh()
+  }
+
+  func onRefresh() {
+    struct LogRequest: Request {
+      var path: String = "/api/v1/users/current/user_agents"
+
+      var method: Alamofire.HTTPMethod = .get
+
+      var body: [String: Any]?
+
+      var queryParams: [String: Any]?
+
+      var headers: [String: String]?
     }
 
-    viewState = .processing
-    AF.request(
-      URL(string: "https://wakatime.com/api/v1/users/current/user_agents")!,
-      headers: .init([.authorization(bearerToken: token)])
-    ).responseDecodable(
-      of: LogModel.self,
-      decoder: decoder
-    ) { response in
-      switch response.result {
-      case let .success(data):
-        self.viewState = .success(data.data ?? [])
-      case let .failure(error):
-        self.viewState = .failure(error)
-      }
-    }
+    state = .processing
+
+    WakaAuthenticatedClient()?.publisher(LogModel.self, request: LogRequest())
+      .sink(result: { [weak self] result in
+        guard let self = self else { return }
+        switch result {
+        case let .success(data):
+          self.state = .success(data.data ?? [])
+        case let .failure(error):
+          self.state = .failure(error)
+        }
+      })
+      .store(in: &cancellables)
   }
 }
