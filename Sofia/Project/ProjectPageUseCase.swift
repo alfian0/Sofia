@@ -35,7 +35,7 @@ final class ProjectPageUseCase {
         .eraseToAnyPublisher()
     }
 
-    guard let duration = WakatimeAuthenticatedService.shared.getDuration(date: date, name: project) else {
+    guard let duration = WakatimeAuthenticatedService.shared.getDuration(date: date, project: project) else {
       return Fail(error: NSError(domain: "Sofia", code: 401))
         .eraseToAnyPublisher()
     }

@@ -12,7 +12,7 @@ import KeychainSwift
 
 @MainActor
 class CommitPageViewModel: ObservableObject {
-  @Published var state: ViewState<CommitModel> = .idle
+  @Published var state: ViewState<[CommitModelView]> = .idle
   private var cancellables: Set<AnyCancellable> = []
 
   let owner: String
@@ -37,7 +37,11 @@ class CommitPageViewModel: ObservableObject {
 
         switch result {
         case let .success(data):
-          self.state = .success(data)
+          self.state = .success(data.files?.map { CommitModelView(
+            filename: $0.filename ?? "",
+            additions: Double($0.additions ?? 0),
+            deletions: Double($0.deletions ?? 0)
+          ) } ?? [])
         case let .failure(error):
           self.state = .failure(error)
         }

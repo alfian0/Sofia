@@ -10,11 +10,26 @@ import Combine
 import Foundation
 import KeychainSwift
 
-enum ViewState<T> {
+enum ViewState<T: Equatable>: Equatable where T: Equatable {
   case processing
   case success(T)
-  case failure(Error)
+  case failure(Error) // Error needs to be `Equatable` for full conformance
   case idle
+
+  static func == (lhs: ViewState<T>, rhs: ViewState<T>) -> Bool {
+    switch (lhs, rhs) {
+    case (.processing, .processing):
+      return true
+    case let (.success(lhsData), .success(rhsData)):
+      return lhsData == rhsData
+    case let (.failure(lhsError), .failure(rhsError)):
+      return lhsError.localizedDescription == rhsError.localizedDescription
+    case (.idle, .idle):
+      return true
+    default:
+      return false
+    }
+  }
 }
 
 let decoder: JSONDecoder = {

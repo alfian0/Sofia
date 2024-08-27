@@ -26,22 +26,21 @@ struct CommitPage: View {
         ProgressView()
 
       case let .success(data):
-        let files = data.files ?? []
         List {
           Section(header: Text("Files")) {
-            ForEach(Array(zip(files.indices, files)), id: \.0) { file in
+            ForEach(Array(zip(data.indices, data)), id: \.0) { file in
               HStack {
-                Text(file.1.filename ?? "")
+                Text(file.1.filename)
                   .font(.caption)
                 Spacer()
                 HStack(spacing: 4) {
-                  Text("\(file.1.additions ?? 0)")
+                  Text("\(file.1.additions)")
                     .foregroundColor(.green)
                     .font(.caption)
                     .fontWeight(.bold)
                   Text("|")
                     .font(.caption)
-                  Text("\(file.1.deletions ?? 0)")
+                  Text("\(file.1.deletions)")
                     .foregroundColor(.red)
                     .font(.caption)
                     .fontWeight(.bold)

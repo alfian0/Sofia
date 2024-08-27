@@ -1,15 +1,18 @@
 //
-//  ProjectView.swift
+//  TodayHeartbeatView.swift
 //  Sofia
 //
-//  Created by alfian on 15/08/24.
+//  Created by Alfian on 27/08/24.
 //
 
 import SwiftUI
 
-struct ProjectView: View {
-  @StateObject private var viewModel = ProjectViewModel()
-  @Binding var selectedProject: ProjectModelView?
+struct TodayHeartbeatView: View {
+  @ObservedObject private var viewModel: TodayHeartbeatViewModel
+
+  init(viewModel: TodayHeartbeatViewModel) {
+    self.viewModel = viewModel
+  }
 
   var body: some View {
     Group {
@@ -19,15 +22,11 @@ struct ProjectView: View {
       case .processing:
         ProgressView()
       case let .success(data):
-        Section(header: Text("Projects")) {
-          ForEach(data, id: \.projectName) { project in
-            Button {
-              selectedProject = project
-            } label: {
-              Text(project.projectName)
-            }
-          }
-        }
+        HeartBeatView(
+          startOfEpoch: viewModel.startOfDay(),
+          heartbeats: data,
+          tintColor: .red
+        )
       case let .failure(error):
         VStack {
           Text("An error occurred: \(error.localizedDescription)")
@@ -42,4 +41,8 @@ struct ProjectView: View {
       viewModel.onAppear()
     }
   }
+}
+
+#Preview {
+  TodayHeartbeatView(viewModel: TodayHeartbeatViewModel())
 }

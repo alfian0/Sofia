@@ -23,18 +23,18 @@ struct LogPage: View {
               VStack(alignment: .leading, spacing: 8) {
                 HStack {
                   HStack {
-                    Text(log.1.editor ?? "")
+                    Text(log.1.editor)
                       .fontWeight(.bold)
                     Text("-")
-                    Text(log.1.os ?? "")
+                    Text(log.1.os)
                   }
 
                   Spacer()
 
-                  Text((log.1.createdAt ?? "").toDate()?.toString() ?? "")
+                  Text((log.1.createdAt).toDate()?.toString() ?? "")
                     .font(.caption)
                 }
-                Text(log.1.value ?? "")
+                Text(log.1.value)
                   .font(.subheadline)
               }
             }

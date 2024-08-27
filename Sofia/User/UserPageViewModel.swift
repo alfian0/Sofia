@@ -12,7 +12,7 @@ import OAuthSwift
 import SwiftUI
 
 class UserPageViewModel: ObservableObject {
-  @Published var state: ViewState<UserModel.DataClass?> = .idle
+  @Published var state: ViewState<UserModelView?> = .idle
   private var cancellables: Set<AnyCancellable> = []
 
   let keychain = KeychainSwift()
@@ -33,7 +33,16 @@ class UserPageViewModel: ObservableObject {
 
         switch result {
         case let .success(data):
-          self.state = .success(data.data)
+          let data = UserModelView(
+            displayName: data.data?.displayName ?? "",
+            email: data.data?.email ?? "",
+            photo: data.data?.photo ?? "",
+            modifiedAt: data.data?.modifiedAt ?? "",
+            timezone: data.data?.timezone ?? "",
+            lastProject: data.data?.lastProject ?? "",
+            lastPlugin: data.data?.lastPlugin ?? ""
+          )
+          self.state = .success(data)
         case let .failure(error):
           self.state = .failure(error)
         }

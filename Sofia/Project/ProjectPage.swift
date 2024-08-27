@@ -38,7 +38,8 @@ struct ProjectPage: View {
         ProgressView()
 
       case let .success(data):
-        let (durations, commits) = data
+        let durations = data.durations
+        let commits = data.commits
         let heartbeats = durations.map { HeartBeatModel(epoch: $0.timestamp, duration: $0.duration) }
         let heartbeats2 = commits.map { HeartBeatModel(epoch: $0.timestamp, duration: 1) }
 

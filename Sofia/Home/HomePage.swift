@@ -11,6 +11,8 @@ struct HomePage: View {
   @ObservedObject private var viewModel = HomePageViewModel()
   @State private var selectedProject: StatusBarModel.Category?
 
+  private let todayViewModel = TodayHeartbeatViewModel()
+
   var body: some View {
     NavigationView {
       content
@@ -52,11 +54,14 @@ struct HomePage: View {
           }
         }
 
-        if let totalSeconds = statusBar.grandTotal?.totalSeconds, totalSeconds > 0 {
-          StatusBarView(selectedProject: $selectedProject, statusBar: statusBar)
-        } else {
-          NoDataView()
-        }
+        TodayHeartbeatView(viewModel: todayViewModel)
+
+        //				ForEach(statusBar.projects ?? []) { project in
+        //					if let projectName = project.name {
+        //						let viewModel = CommitsViewModel(project: projectName)
+        //						CommitsView(viewModel: viewModel)
+        //					}
+        //				}
       }
       .listStyle(.plain)
       .fullScreenCover(item: $selectedProject, content: { project in
@@ -64,8 +69,8 @@ struct HomePage: View {
           ProjectPage(
             project: project.name ?? "",
             seconds: project.totalSeconds ?? 0,
-            start: statusBar.range?.start ?? "",
-            end: statusBar.range?.end ?? ""
+            start: statusBar.start,
+            end: statusBar.end
           )
           .navigationBarItems(leading: Button(action: {
             selectedProject = nil

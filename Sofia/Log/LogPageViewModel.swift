@@ -11,7 +11,7 @@ import KeychainSwift
 import SwiftUI
 
 class LogPageViewModel: ObservableObject {
-  @Published var state: ViewState<[LogModel.Datum]> = .idle
+  @Published var state: ViewState<[LogModelView]> = .idle
   private var cancellables: Set<AnyCancellable> = []
 
   func onAppear() {
@@ -26,7 +26,13 @@ class LogPageViewModel: ObservableObject {
         guard let self = self else { return }
         switch result {
         case let .success(data):
-          self.state = .success(data.data ?? [])
+          let data = data.data?.map { LogModelView(
+            editor: $0.editor ?? "",
+            os: $0.os ?? "",
+            createdAt: $0.createdAt ?? "",
+            value: $0.value ?? ""
+          ) } ?? []
+          self.state = .success(data)
         case let .failure(error):
           self.state = .failure(error)
         }

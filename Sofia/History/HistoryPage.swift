@@ -11,7 +11,7 @@ import SwiftUI
 
 struct HistoryPage: View {
   @ObservedObject private var viewModel = HistoryPageViewModel()
-  @State private var selectedProject: ProjectModel.Datum?
+  @State private var selectedProject: ProjectModelView?
 
   var body: some View {
     NavigationView {
@@ -26,13 +26,13 @@ struct HistoryPage: View {
             Section {
               VStack(alignment: .leading, spacing: 16) {
                 VStack(alignment: .leading) {
-                  Text(data.data?.text ?? "")
+                  Text(data.text)
                     .font(.title)
                     .fontWeight(.bold)
                   Text("Total Time")
                 }
                 VStack(alignment: .leading) {
-                  Text("\((data.data?.dailyAverage ?? 0).secondsToHours) hrs")
+                  Text("\((data.dailyAverage).secondsToHours) hrs")
                     .font(.title)
                     .fontWeight(.bold)
                   Text("Average")
@@ -41,7 +41,7 @@ struct HistoryPage: View {
                   VStack(alignment: .leading) {
                     Text("from")
                       .fontWeight(.bold)
-                    Text(data.data?.range?.startText ?? "")
+                    Text(data.startText)
                   }
 
                   Spacer()
@@ -49,7 +49,7 @@ struct HistoryPage: View {
                   VStack(alignment: .trailing) {
                     Text("to")
                       .fontWeight(.bold)
-                    Text(data.data?.range?.endText ?? "")
+                    Text(data.endText)
                   }
                 }
               }
@@ -71,13 +71,13 @@ struct HistoryPage: View {
       .navigationBarTitle("History")
       .fullScreenCover(item: $selectedProject, content: { project in
         NavigationView {
-          let createdAt = project.createdAt?.toDate()?.toString(with: "YYYY-MM-dd")
+          let createdAt = project.createdAt.toDate()?.toString(with: "YYYY-MM-dd")
           SummariesPage(viewModel:
             SummariesPageViewModel(
-              start: project.firstHeartbeatAt?.toDate()?.toString(with: "YYYY-MM-dd") ?? createdAt ?? "",
-              end: project.lastHeartbeatAt?.toDate()?.toString(with: "YYYY-MM-dd") ?? Date()
+              start: project.firstHeartbeatAt.toDate()?.toString(with: "YYYY-MM-dd") ?? createdAt ?? "",
+              end: project.lastHeartbeatAt.toDate()?.toString(with: "YYYY-MM-dd") ?? Date()
                 .toString(with: "YYYY-MM-dd"),
-              project: project.name ?? ""
+              project: project.projectName
             ))
             .navigationBarItems(leading: Button(action: {
               selectedProject = nil

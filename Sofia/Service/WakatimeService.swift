@@ -52,14 +52,16 @@ final class WakatimeAuthenticatedService {
     )
   }
 
-  func getDuration(date: String, name: String) -> AnyPublisher<DurationModel, Error>? {
+  func getDuration(date: String, project: String? = nil) -> AnyPublisher<DurationModel, Error>? {
+    var queryParams: [String: Any] = [
+      "date": date
+    ]
+    if let project = project {
+      queryParams["project"] = project
+    }
     return client?.publisher(
       DurationModel.self,
-      request: RequestImpl(path: "/api/v1/users/current/durations", method: .get, queryParams: [
-        "date": date,
-        "project": name,
-        "timeout": 15
-      ])
+      request: RequestImpl(path: "/api/v1/users/current/durations", method: .get, queryParams: queryParams)
     )
   }
 

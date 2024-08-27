@@ -10,9 +10,15 @@ import Combine
 import Foundation
 import KeychainSwift
 
+struct StatusBarModelView: Equatable {
+  let totalSeconds: Double
+  let start: String
+  let end: String
+}
+
 @MainActor
 class HomePageViewModel: ObservableObject {
-  @Published var state: ViewState<StatusBarModel.DataClass> = .idle
+  @Published var state: ViewState<StatusBarModelView> = .idle
   private var cancellables: Set<AnyCancellable> = []
 
   var insight: String {
@@ -21,7 +27,7 @@ class HomePageViewModel: ObservableObject {
       return ""
     }
 
-    let codingTime = (statusBar.grandTotal?.totalSeconds ?? 0).secondsToHours
+    let codingTime = statusBar.totalSeconds.secondsToHours
     let startOfWorkday = Calendar.current.date(bySettingHour: 9, minute: 0, second: 0, of: Date())!
     let endOfWorkday = Calendar.current.date(bySettingHour: 17, minute: 0, second: 0, of: Date())!
 
@@ -49,6 +55,11 @@ class HomePageViewModel: ObservableObject {
         switch result {
         case let .success(data):
           if let data = data.data {
+            let data = StatusBarModelView(
+              totalSeconds: data.grandTotal?.totalSeconds ?? 0,
+              start: data.range?.start ?? "",
+              end: data.range?.end ?? ""
+            )
             self.state = .success(data)
           } else {
             self.state = .idle

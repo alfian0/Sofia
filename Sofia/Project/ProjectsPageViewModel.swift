@@ -10,12 +10,12 @@ import Combine
 import Foundation
 import KeychainSwift
 
-struct DurationM {
+struct DurationM: Equatable {
   let timestamp: Double
   let duration: Double
 }
 
-struct CommitM {
+struct CommitM: Equatable {
   let sessionStarted: Double
   let timestamp: Double
   let duration: Double
@@ -24,9 +24,14 @@ struct CommitM {
   let avatarURL: String
 }
 
+struct SyncDurationCommit: Equatable {
+  let durations: [DurationM]
+  let commits: [CommitM]
+}
+
 @MainActor
 class ProjectsPageViewModel: ObservableObject {
-  @Published var state: ViewState<([DurationM], [CommitM])> = .idle
+  @Published var state: ViewState<SyncDurationCommit> = .idle
   private var cancellables: Set<AnyCancellable> = []
 
   private let projectName: String
@@ -54,7 +59,8 @@ class ProjectsPageViewModel: ObservableObject {
 
           let commits = buildCommits(raw: value.1, durations: durations)
 
-          self.state = .success((durations, commits.reversed()))
+          let data = SyncDurationCommit(durations: durations, commits: commits.reversed())
+          self.state = .success(data)
         case let .failure(error):
           self.state = .failure(error)
         }

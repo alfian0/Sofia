@@ -10,7 +10,7 @@ import Foundation
 
 @MainActor
 class SummariesPageViewModel: ObservableObject {
-  @Published var state: ViewState<SummariesModel> = .idle
+  @Published var state: ViewState<SummariesModelView> = .idle
   private var cancellables: Set<AnyCancellable> = []
 
   let start: String
@@ -37,7 +37,7 @@ class SummariesPageViewModel: ObservableObject {
 
         switch result {
         case let .success(data):
-          self.state = .success(data)
+          self.state = .success(SummariesModelView())
         case let .failure(error):
           self.state = .failure(error)
         }
