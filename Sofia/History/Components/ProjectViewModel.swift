@@ -5,51 +5,29 @@
 //  Created by alfian on 15/08/24.
 //
 
-import Alamofire
+import Combine
 import Foundation
-import KeychainSwift
 
 @MainActor
 class ProjectViewModel: ObservableObject {
-  @Published var state: ProjectViewState = .idle
-
-  enum ProjectViewState {
-    case processing
-    case success(ProjectModel)
-    case failure(Error)
-    case idle
-  }
-
-  private let decoder: JSONDecoder = {
-    let decoder = JSONDecoder()
-    decoder.keyDecodingStrategy = .convertFromSnakeCase
-    return decoder
-  }()
+  @Published var state: ViewState<ProjectModel> = .idle
+  private var cancellables: Set<AnyCancellable> = []
 
   func onAppear() {
     onRefresh()
   }
 
   func onRefresh() {
-    if let token = KeychainSwift().get("stringToken"),
-       !token.isEmpty {
-      state = .processing
-      AF.request(
-        URL(string: "https://wakatime.com/api/v1/users/current/projects")!,
-        headers: .init([.authorization(bearerToken: token)])
-      ).responseDecodable(
-        of: ProjectModel.self,
-        decoder: decoder
-      ) { [weak self] response in
+    WakatimeAuthenticatedService.shared.getProjects()?
+      .sink(result: { [weak self] result in
         guard let self = self else { return }
-
-        switch response.result {
+        switch result {
         case let .success(data):
           self.state = .success(data)
         case let .failure(error):
           self.state = .failure(error)
         }
-      }
-    }
+      })
+      .store(in: &cancellables)
   }
 }

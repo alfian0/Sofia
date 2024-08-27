@@ -66,4 +66,11 @@ final class WakatimeAuthenticatedService {
   func getUser() -> AnyPublisher<UserModel, Error>? {
     return client?.publisher(UserModel.self, request: RequestImpl(path: "/api/v1/users/current", method: .get))
   }
+
+  func getProjects() -> AnyPublisher<ProjectModel, Error>? {
+    return client?.publisher(
+      ProjectModel.self,
+      request: RequestImpl(path: "/api/v1/users/current/projects", method: .get)
+    )
+  }
 }
