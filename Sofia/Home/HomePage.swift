@@ -11,8 +11,6 @@ struct HomePage: View {
   @ObservedObject private var viewModel = HomePageViewModel()
   @State private var selectedProject: StatusBarModel.Category?
 
-  private let todayViewModel = TodayHeartbeatViewModel()
-
   var body: some View {
     NavigationView {
       content
@@ -54,14 +52,7 @@ struct HomePage: View {
           }
         }
 
-        TodayHeartbeatView(viewModel: todayViewModel)
-
-        //				ForEach(statusBar.projects ?? []) { project in
-        //					if let projectName = project.name {
-        //						let viewModel = CommitsViewModel(project: projectName)
-        //						CommitsView(viewModel: viewModel)
-        //					}
-        //				}
+        TodayHeartbeatView(state: viewModel.state2)
       }
       .listStyle(.plain)
       .fullScreenCover(item: $selectedProject, content: { project in

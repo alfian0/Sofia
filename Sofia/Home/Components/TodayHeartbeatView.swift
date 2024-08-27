@@ -8,22 +8,18 @@
 import SwiftUI
 
 struct TodayHeartbeatView: View {
-  @ObservedObject private var viewModel: TodayHeartbeatViewModel
-
-  init(viewModel: TodayHeartbeatViewModel) {
-    self.viewModel = viewModel
-  }
+  var state: ViewState<[HeartBeatModel]>
 
   var body: some View {
     Group {
-      switch viewModel.state {
+      switch state {
       case .idle:
         Text("Idle").font(.title)
       case .processing:
         ProgressView()
       case let .success(data):
         HeartBeatView(
-          startOfEpoch: viewModel.startOfDay(),
+          startOfEpoch: Date().startOfDay.timeIntervalSince1970,
           heartbeats: data,
           tintColor: .red
         )
@@ -31,18 +27,12 @@ struct TodayHeartbeatView: View {
         VStack {
           Text("An error occurred: \(error.localizedDescription)")
             .foregroundColor(.red)
-          Button("Retry") {
-            viewModel.onRefresh()
-          }
         }
       }
-    }
-    .onAppear {
-      viewModel.onAppear()
     }
   }
 }
 
 #Preview {
-  TodayHeartbeatView(viewModel: TodayHeartbeatViewModel())
+  TodayHeartbeatView(state: .idle)
 }

@@ -19,6 +19,7 @@ struct StatusBarModelView: Equatable {
 @MainActor
 class HomePageViewModel: ObservableObject {
   @Published var state: ViewState<StatusBarModelView> = .idle
+  @Published var state2: ViewState<[HeartBeatModel]> = .idle
   private var cancellables: Set<AnyCancellable> = []
 
   var insight: String {
@@ -48,7 +49,6 @@ class HomePageViewModel: ObservableObject {
 
   func onRefresh() {
     state = .processing
-
     WakatimeAuthenticatedService.shared.getStatusBar()?
       .sink(result: { [weak self] result in
         guard let self = self else { return }
@@ -66,6 +66,21 @@ class HomePageViewModel: ObservableObject {
           }
         case let .failure(error):
           self.state = .failure(error)
+        }
+      })
+      .store(in: &cancellables)
+
+    state2 = .processing
+    let date = Date().toString(with: "yyyy-MM-dd")
+    WakatimeAuthenticatedService.shared.getDuration(date: date)?
+      .sink(result: { [weak self] result in
+        guard let self = self else { return }
+        switch result {
+        case let .success(data):
+          let heartbeat = data.data?.map { HeartBeatModel(epoch: $0.time ?? 0, duration: $0.duration ?? 0) } ?? []
+          self.state2 = .success(heartbeat)
+        case let .failure(error):
+          self.state2 = .failure(error)
         }
       })
       .store(in: &cancellables)
